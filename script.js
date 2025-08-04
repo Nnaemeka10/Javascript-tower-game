@@ -39,9 +39,8 @@ const gameLoop = () => {
 
 
 
-// create and update enemies array
-
-    //draw enemies
+// Event listener for mouse click to manage tower placement
+// This will add a tower at the clicked position if it's not on the path and no tower exists there
 canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
