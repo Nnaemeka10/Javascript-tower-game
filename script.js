@@ -2,9 +2,10 @@
 import drawGrid from "./functions/drawGrid.js";
 import { canvas } from "./utils/constants.js";
 import drawPath from "./functions/drawPath.js";
-import createEnemy from "./functions/createEnemy.js";
-import manageTower from "./functions/manageTower.js";
+import createEnemy, { enemies } from "./functions/createEnemy.js";
+import manageTower, { handleTowerShooting } from "./functions/manageTower.js";
 import drawTowers from "./functions/drawTowers.js";
+import manageProjectiles from "./functions/manageProjectiles.js";
 
 
 const ctx = canvas.getContext('2d');
@@ -25,11 +26,17 @@ const gameLoop = () => {
     drawPath(ctx);
 
     // create and update  and draw enemy
-    createEnemy(ctx, enemiesEscaped);
+    enemiesEscaped = createEnemy(ctx, enemiesEscaped);
+
+    // handle tower shooting
+    handleTowerShooting(enemies);
 
    // draw towers
    drawTowers(ctx);
    
+    // manage projectiles
+    manageProjectiles(ctx);
+
     // draw text for enemies escaped
     drawText();
 
@@ -55,11 +62,11 @@ canvas.addEventListener('click', (e) => {
    
 
 
-    const drawText = () => {
+ const drawText = () => {
         ctx.font = '16px sans-serif';
         ctx.fillStyle = 'white';
         ctx.fillText(`Lives left: ${gameLife - enemiesEscaped}`, 150, 50);
-    }
+}
 
 
 // start game

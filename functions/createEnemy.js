@@ -33,4 +33,10 @@ export default function createEnemy(ctx, enemiesEscaped) {
     for (const enemy of enemies) {
         enemy.drawEnemy(ctx);
     }
+
+    // Return the number of enemies escaped
+    return enemiesEscaped;
 }
+
+// Export the enemies array for other modules to access
+export { enemies };

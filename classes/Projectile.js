@@ -1,4 +1,4 @@
-import { TILE_SIZE } from "../utils/constants";
+
 
 export default class Projectile {
     constructor(startX, startY, targetEnemy, damage) {
@@ -44,7 +44,7 @@ export default class Projectile {
         if (!this.targetEnemy) return; // Don't draw if no target enemy
         if (this.hasHit) return; // Don't draw if the projectile has hit the enemy
 
-        
+
 
         //calculate the direction for drawing the projectile
         const deltaX = this.targetEnemy.pixelX - this.x;
