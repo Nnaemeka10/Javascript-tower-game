@@ -72,3 +72,11 @@ canvas.addEventListener('click', (e) => {
 // start game
 
 gameLoop();
+
+// List of things to do:
+// 1. Add a way to end the game when lives reach 0
+// 2. Add a way to display the game over message
+// 3. ingame menu
+// 4. add different types of enemies  
+// 5. add different types of towers
+// 6. add a way to upgrade towers and a round system of increasingly defficult oponents
