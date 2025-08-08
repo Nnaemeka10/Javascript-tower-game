@@ -5,7 +5,7 @@ let spawnTimer = 0; // Timer for spawning enemies
 let spawnInterval = 100; // Interval for spawning enemies in frames
 let enemies = []
 
-export default function createEnemy(ctx, enemiesEscaped) {
+export default function manageEnemies(ctx, enemiesEscaped) {
     spawnTimer++;
     if (spawnTimer % spawnInterval === 0) {
         enemies.push(new Enemy());

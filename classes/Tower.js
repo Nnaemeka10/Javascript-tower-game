@@ -45,6 +45,7 @@ export default class Tower {
 
         //convert the range from tiles to pixels
         const rangeInPixels = this.range * TILE_SIZE; // range in pixels
+
         return distance <= rangeInPixels; // Check if the enemy is within range
     }
 
@@ -84,8 +85,10 @@ export default class Tower {
 
 
     // method to draw the tower
-    draw(ctx) {
-        ctx.fillStyle = 'blue';
+    draw(ctx, isSelected = false) {
+        
+        //change the tower color based on selection
+        ctx.fillStyle = isSelected ? 'lightblue' : 'blue';
         ctx.beginPath();
         ctx.arc(
             this.pixelX, // center x
@@ -95,5 +98,27 @@ export default class Tower {
             Math.PI * 2 // end angle
         );
         ctx.fill();
+
+
+        if (isSelected) {
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.pixelX, this.pixelY, this.range * TILE_SIZE, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Draw the tower border, not really necessary
+        ctx.strokeStyle = 'darkblue';
+        ctx.lineWidth = 2;
+        ctx.beginPath ();
+        ctx.arc(
+            this.pixelX, // center x
+            this.pixelY, // center y
+            this.radius, // radius
+            0, // start angle
+            Math.PI * 2 // end angle
+        );
+        ctx.stroke();
     }
 }

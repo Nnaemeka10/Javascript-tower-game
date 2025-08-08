@@ -23,7 +23,9 @@ export default function manageProjectiles(ctx) {
 
 // Function to create a new projectile
 export function createProjectile(startX, startY, targetEnemy, damage) {
-    projectiles.push(new Projectile(startX, startY, targetEnemy, damage));
+    if (targetEnemy && targetEnemy.currentHealth > 0) {
+        projectiles.push(new Projectile(startX, startY, targetEnemy, damage));
+    }
 }
 
 // Export the projectile array for other modules to access

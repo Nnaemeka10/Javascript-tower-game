@@ -2,8 +2,8 @@
 import drawGrid from "./functions/drawGrid.js";
 import { canvas } from "./utils/constants.js";
 import drawPath from "./functions/drawPath.js";
-import createEnemy, { enemies } from "./functions/createEnemy.js";
-import manageTower, { handleTowerShooting } from "./functions/manageTower.js";
+import manageEnemies, { enemies } from "./functions/manageEnemies.js";
+import manageTower, { handleTowerShooting, isTowerSelected, deselectTower } from "./functions/manageTower.js";
 import drawTowers from "./functions/drawTowers.js";
 import manageProjectiles from "./functions/manageProjectiles.js";
 
@@ -26,7 +26,7 @@ const gameLoop = () => {
     drawPath(ctx);
 
     // create and update  and draw enemy
-    enemiesEscaped = createEnemy(ctx, enemiesEscaped);
+    enemiesEscaped = manageEnemies(ctx, enemiesEscaped);
 
     // handle tower shooting
     handleTowerShooting(enemies);
@@ -59,7 +59,12 @@ canvas.addEventListener('click', (e) => {
 });
 
 
-   
+   //event listner for keyboard escape
+   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        deselectTower();
+    }
+   });
 
 
  const drawText = () => {

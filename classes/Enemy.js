@@ -9,6 +9,7 @@ export default class Enemy {
         this.radius = TILE_SIZE /3; // radius of the enemy
         this.maxHealth = 100; // max health of the enemy
         this.currentHealth = 100; // current health of the enemy
+        this.hitFlash = 0; // frames remaining for the hit flash effect
     }
 
     // update method to move the enemy along the path
@@ -32,14 +33,24 @@ export default class Enemy {
             this.progress = 0;
             this.currentTile++;
         }
+
+        // Handle hit flash effect
+        if (this.hitFlash > 0) {
+            this.hitFlash--; // Decrease the hit flash timer
+        }
     }
 
     // draw method to render the enemy
     drawEnemy(ctx) {
 
+        //determine enemy color(flash white when hit)
+        let enemyColor = 'purple';
+        if (this.hitFlash > 0) {
+            enemyColor = this.hitFlash % 2 === 0 ? 'white' : 'purple'; // Flash white when hit
+        }
         // enemy circle
         ctx.beginPath();
-        ctx.fillStyle = 'purple';
+        ctx.fillStyle = enemyColor;
         ctx.arc(this.pixelX, this.pixelY, this.radius, 0, Math.PI * 2);
         ctx.fill();
 
@@ -49,14 +60,37 @@ export default class Enemy {
         const x = this.pixelX - barWidth / 2;
         const y = this.pixelY - this.radius - 10; 
 
-        // Draw the health bar background and current health
+        // Draw the health bar border
         ctx.fillStyle = 'black';
         ctx.fillRect(x, y, barWidth, barHeight);
 
-        //formatting the health bar
+        //formatting the health bar with color coding
         const healthRatio = this.currentHealth / this.maxHealth;
-        ctx.fillStyle = 'limegreen';
+        let healthColor = 'limegreen'; 
+        if (healthRatio < 0.3) {
+            healthColor = 'red'; // Low health
+        } else if (healthRatio < 0.6) {
+            healthColor = 'orange'; // Medium health
+        }
+        ctx.fillStyle = healthColor;
         ctx.fillRect(x, y, barWidth * healthRatio, barHeight);
+
+        //white border around the health bar
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, barWidth, barHeight);
     }
 
+    //check if the enemy is dead
+    isDead() {
+        return this.currentHealth <= 0;
+    }
+
+    //Get enemy's position fir targeting
+    getPosition() {
+        return {
+            x: this.pixelX,
+            y: this.pixelY
+        };
+    }
 }

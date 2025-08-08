@@ -23,26 +23,52 @@ export default class Projectile {
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY); // distance to the target
 
         //Check if the projectile has reached the enemy
-        if (distance < this.length) {
-            this.targetEnemy.currentHealth -= this.damage; // Deal damage to the enemy
+        //I'm using a collison radius so it doesnt get to the heart of the enemy and mess up the visuals previously it was the arrow length.
+        //more like I changed from using the arrrow length to using the enemy radius plus a small buffer as a determinatnt for when to deal damage
+        const collisonRadius = this.targetEnemy.radius + 10; // radius of the enemy plus a small buffer
+        if (distance <= collisonRadius) {
+            // damage the enemy
+            this.dealDamage(); // Deal damage to the enemy
             this.hasHit = true; // Mark as hit
             return; // Stop updating the projectile
         }
-
-        // Normalize the direction vector
-        const directionX = deltaX / distance; // direction in x
-        const directionY = deltaY / distance; // direction in y
-
-        // Move the projectile towards the target enemy
-        this.x += directionX * this.speed;
-        this.y += directionY * this.speed;
-    }
-
-    draw(ctx) {
         
 
-        if (!this.targetEnemy) return; // Don't draw if no target enemy
-        if (this.hasHit) return; // Don't draw if the projectile has hit the enemy
+        // Avoid division by zero and ensure that if are very close and haven't hit yet, we hit next frame
+        //really doubting if it was necessaary to do this.
+        if(distance < this.speed) {
+            //move the projectile to the enemy's position
+            this.x = this.targetEnemy.pixelX;
+            this.y = this.targetEnemy.pixelY;
+        } else {
+            // Normalize the direction vector
+            const directionX = deltaX / distance; // direction in x
+            const directionY = deltaY / distance; // direction in y
+
+            // Move the projectile towards the target enemy
+            this.x += directionX * this.speed;
+            this.y += directionY * this.speed;
+        }      
+    }
+
+    dealDamage() {
+        if (this.targetEnemy && this.targetEnemy.currentHealth > 0){
+            this.targetEnemy.currentHealth -= this.damage;
+
+            //An overdo validation to ensure health doesn't go below zero
+            if (this.targetEnemy.currentHealth < 0) {
+                this.targetEnemy.currentHealth = 0;
+            }
+
+            //small damage effects, might expand later
+            this.targetEnemy.hitFlash = 5; //frames to flash
+        }
+    }
+
+
+    draw(ctx) {
+
+        if (!this.targetEnemy || this.hasHit) return; // Don't draw if no target enemy oor if arrow has hit
 
 
 
