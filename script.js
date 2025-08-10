@@ -62,7 +62,7 @@ canvas.addEventListener('click', (e) => {
    //event listner for keyboard escape
    document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-        deselectTower();
+        deselectTower()
     }
    });
 
@@ -75,8 +75,8 @@ canvas.addEventListener('click', (e) => {
 
 
 // start game
+gameLoop();   
 
-gameLoop();
 
 // List of things to do:
 // 1. Add a way to end the game when lives reach 0

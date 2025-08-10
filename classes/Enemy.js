@@ -2,14 +2,18 @@ import { path } from '../maps/map1.js';
 import { TILE_SIZE } from '../utils/constants.js';
 
 export default class Enemy {
-    constructor() {
+    constructor(health = 100, speed = 0.02, color = 'purple') {
         this.currentTile = 0; // index in the path array
         this.progress = 0; // how far between the current tile and the next tile
-        this.speed = 0.02; // speed of the enemy
-        this.radius = TILE_SIZE /3; // radius of the enemy
-        this.maxHealth = 100; // max health of the enemy
-        this.currentHealth = 100; // current health of the enemy
+        this.speed = speed; // speed of the enemy
+        this.maxHealth = health; // max health of the enemy
+        this.currentHealth = health; // current health of the enemy
+        this.color = color
         this.hitFlash = 0; // frames remaining for the hit flash effect
+        
+        const baseRadius = TILE_SIZE /3;
+        const healthMultiplier = Math.sqrt(health / 100);
+        this.radius = baseRadius * healthMultiplier;
     }
 
     // update method to move the enemy along the path
@@ -44,9 +48,9 @@ export default class Enemy {
     drawEnemy(ctx) {
 
         //determine enemy color(flash white when hit)
-        let enemyColor = 'purple';
+        let enemyColor = this.color;
         if (this.hitFlash > 0) {
-            enemyColor = this.hitFlash % 2 === 0 ? 'white' : 'purple'; // Flash white when hit
+            enemyColor = this.hitFlash % 2 === 0 ? 'white' : this.color; // Flash white when hit
         }
         // enemy circle
         ctx.beginPath();
@@ -55,10 +59,10 @@ export default class Enemy {
         ctx.fill();
 
         // enemy health bar
-        const barWidth = TILE_SIZE / 2;
+        const barWidth = Math.max(TILE_SIZE / 2, this.radius * 1.5);
         const barHeight = 5;
         const x = this.pixelX - barWidth / 2;
-        const y = this.pixelY - this.radius - 10; 
+        const y = this.pixelY - this.radius - 10;  //position above enemy
 
         // Draw the health bar border
         ctx.fillStyle = 'black';
