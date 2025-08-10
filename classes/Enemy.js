@@ -10,6 +10,7 @@ export default class Enemy {
         this.currentHealth = health; // current health of the enemy
         this.color = color
         this.hitFlash = 0; // frames remaining for the hit flash effect
+        this.xpCost = speed * health;
         
         const baseRadius = TILE_SIZE /3;
         const healthMultiplier = Math.sqrt(health / 100);
@@ -90,7 +91,7 @@ export default class Enemy {
         return this.currentHealth <= 0;
     }
 
-    //Get enemy's position fir targeting
+    //Get enemy's position for targeting
     getPosition() {
         return {
             x: this.pixelX,

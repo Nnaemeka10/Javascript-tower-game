@@ -1,31 +1,24 @@
 import { path } from '../maps/map1.js';
-import Goblin from '../classes/Goblin.js';
-import Dwarve from '../classes/Dwarve.js';
-import Dragon from '../classes/Dragon.js';
-import Elve from '../classes/Elve.js';
-import Hobbit from '../classes/Hobbit.js';
-import Enemy from '../classes/Enemy.js';
+import waveManager from '../classes/WaveManager.js';
 
 let spawnTimer = 0; // Timer for spawning enemies
-let spawnInterval = 100; // Interval for spawning enemies in frames
+let spawnInterval = 50; // Interval for spawning enemies in frames
 let enemies = []
 
-//Array of different enemy types for random selection
-const ENEMY_TYPES = [Goblin, Dwarve, Elve, Hobbit, Dragon]
-
-//function to randomly select an enemy type
-function getRandomEnemyType() {
-    const randomIndex = Math.floor(Math.random() * ENEMY_TYPES.length);
-    return ENEMY_TYPES[randomIndex];
-}
 
 export default function manageEnemies(ctx, enemiesEscaped) {
+
+    //update wave message timer
+    waveManager.updateWaveMessage();
+
     spawnTimer++;
     if (spawnTimer % spawnInterval === 0) {
 
         //get a random enemy
-        const EnemyType = getRandomEnemyType();
-        enemies.push(new EnemyType())
+        const newEnemy = waveManager.handleSpawning();
+        if(newEnemy) {
+            enemies.push(newEnemy);
+        }
 
     }
 
@@ -35,6 +28,7 @@ export default function manageEnemies(ctx, enemiesEscaped) {
 
         //remove if dead
         if (enemy.currentHealth <= 0) {
+            waveManager.addKillXP(enemy);
             return false; // Remove enemy from the array
         }
 
@@ -47,6 +41,9 @@ export default function manageEnemies(ctx, enemiesEscaped) {
         return true; // Keep the enemy in the array
     });
 
+    if(waveManager.checkWaveComplete(enemies)) {
+        waveManager.startNextWave();
+    }
     // draw each enemy
     for (const enemy of enemies) {
         enemy.drawEnemy(ctx);
@@ -55,6 +52,8 @@ export default function manageEnemies(ctx, enemiesEscaped) {
     // Return the number of enemies escaped
     return enemiesEscaped;
 }
+
+
 
 // Export the enemies array for other modules to access
 export { enemies };
