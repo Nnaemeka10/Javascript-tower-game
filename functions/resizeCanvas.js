@@ -2,55 +2,58 @@ import { canvas, COLS, ROWS } from '../utils/constants.js';
 
 let TILE_SIZE;
 
+const DEBUG = true;
+
 export function resizeCanvas() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     const aspectRatio = COLS / ROWS;
 
-    let targetWidth, targetHeight;
+    let newWidth, newHeight;
 
     if (screenWidth < 768) {
         // For small screens, use full width and adjust height
-        targetWidth = screenWidth;
-        targetHeight = screenHeight * 0.8; //use 80% of height
+        newWidth = screenWidth;
+        newHeight = newWidth / aspectRatio; //use 80% of height
+
+        // Ensure the height does not exceed screen height
+        if (newHeight > screenHeight) {
+            newHeight = screenHeight;
+            newWidth = newHeight * aspectRatio;
+        }
 
     } else {
-        targetWidth = screenWidth * 0.7; //use 70% of width
-        targetHeight = screenHeight;
+
+        // For larger screens, use 70% of width and full height
+        newWidth = screenWidth * 0.7; //use 70% of width
+        newHeight = newWidth / aspectRatio;
+
+        // Ensure the height does not exceed screen height
+        if (newHeight > screenHeight) {
+            newHeight = screenHeight;
+            newWidth = newHeight * aspectRatio;
+        }
     }
 
-    //fit into available space while maintaining aspect ratio
-    if (targetWidth / targetHeight > aspectRatio) {
-        //too wide for the height, limit by height
-        canvas.height = targetHeight;
-        canvas.width = targetHeight * aspectRatio;
-    } else {
-        //too tall for the width, limit by width
-        canvas.width = targetWidth;
-        canvas.height = targetWidth / aspectRatio;
-    }
+   // calculate the tile size based on the new dimensions and as integer pixel perfect
+    TILE_SIZE = Math.floor(
+        Math.min(newWidth / COLS, newHeight / ROWS
+    ));
 
-    //pick tile size from available width
-    let tileWidth = Math.floor(canvas.width / COLS);
-    let tileHeight = Math.floor(canvas.height / ROWS);
-    
-    //use the smaller of the two to ensure fit 
-    TILE_SIZE = Math.min(tileWidth, tileHeight);
-
-    //resize canvas to match exact tile size
+    //set canvas to exact tile multiples
     canvas.width = TILE_SIZE * COLS;
     canvas.height = TILE_SIZE * ROWS;
-
-    // //snap dimensions to multiples of COLS and ROWS
-    // canvas.width = Math.floor(canvas.width / COLS) * COLS;
-    // canvas.height = Math.floor(canvas.height / ROWS) * ROWS;
-
-    // //calculate tile size based on new canvas size
-    // TILE_SIZE = canvas.width / COLS;
+    
 
     //center the canvas with css
     canvas.style.display = 'block';
     canvas.style.margin = '0 auto';
+
+    if (DEBUG) {
+       console.log('📐 Screen:', screenWidth, 'x', screenHeight);
+        console.log('🎨 Canvas:', canvas.width, 'x', canvas.height);
+        console.log('🟦 TILE_SIZE:', TILE_SIZE);
+    }
 
 }
 
