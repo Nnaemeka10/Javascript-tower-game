@@ -1,23 +1,8 @@
-
-// export const TILE_SIZE = 40;
-
-
-export const gameLife = 20; // Game live counter
-
-export const canvas = document.getElementById('gameCanvas');
-export const ctx = canvas.getContext('2d');
-
-// export const COLS = canvas.width / TILE_SIZE;
-// export const ROWS = canvas.height / TILE_SIZE;
-
-export const startingBudget = 500;
-
-export const COLS = 20;
-export const ROWS = 15;
+import { canvas, COLS, ROWS } from '../utils/constants.js';
 
 let TILE_SIZE;
 
-function resizeCanvas() {
+export function resizeCanvas() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     const aspectRatio = COLS / ROWS;
@@ -69,11 +54,12 @@ function resizeCanvas() {
 
 }
 
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+export function initCanvasResizer() {
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+}
 
 export function getTileSize() {
     return TILE_SIZE;
 }
-
-

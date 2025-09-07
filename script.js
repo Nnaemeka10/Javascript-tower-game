@@ -6,14 +6,19 @@ import manageEnemies, { enemies } from "./functions/manageEnemies.js";
 import manageTower, { handleTowerShooting, isTowerSelected, deselectTower } from "./functions/manageTower.js";
 import drawTowers from "./functions/drawTowers.js";
 import manageProjectiles from "./functions/manageProjectiles.js";
-import waveManager from "./classes/gameManagers/WaveManager.js";
+import drawUI from "./functions/drawUI.js";
 
 
-const ctx = canvas.getContext('2d');
-let enemiesEscaped = 0; // Counter for escaped enemies
-const gameLife = 20; // Game live counter
+import { ctx } from "./utils/constants.js";
+import { initCanvasResizer } from "./functions/resizeCanvas.js";
 
 
+//game states
+let gamePaused = false;
+let gameRunning = false;
+let animationID;
+
+initCanvasResizer();
 
 // Game loop
 const gameLoop = () => {
@@ -26,14 +31,15 @@ const gameLoop = () => {
     // draw path
     drawPath(ctx);
 
+    if (!gameRunning || gamePaused) return; // Stop the loop if the game is not running or paused
     // create and update  and draw enemy
-    enemiesEscaped = manageEnemies(ctx, enemiesEscaped);
+    manageEnemies(ctx);
 
     // handle tower shooting
     handleTowerShooting(enemies);
 
    // draw towers
-   drawTowers(ctx);
+    drawTowers(ctx);
    
     // manage projectiles
     manageProjectiles(ctx);
@@ -42,7 +48,7 @@ const gameLoop = () => {
     drawUI();
 
     // loop on next frame
-    requestAnimationFrame(gameLoop);
+    animationID = requestAnimationFrame(gameLoop);
 }
 
 
@@ -59,66 +65,60 @@ canvas.addEventListener('click', (e) => {
     manageTower(mouseX, mouseY, ctx);
 });
 
+    const pauseGame = () => {
+        // Function to pause the game
+        // This can be implemented by stopping the game 
+        if (gameRunning && !gamePaused) {
+            gamePaused = true;
+            cancelAnimationFrame(animationID);
+        }
+    }
+
+    const resumeGame = () => {
+        if (gameRunning && gamePaused) {
+            gamePaused = false;
+            animationID = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    const startGame = () => {
+        if (!gameRunning) {
+            gameRunning = true;
+            gamePaused = false;
+            animationID = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    const stopGame = () => {  
+        gameRunning = false;
+        gamePaused = false;
+        cancelAnimationFrame(animationID);
+        // Additional reset logic can be added here if needed
+    }
+
+    document.getElementById('play').addEventListener('click', startGame);
+    document.getElementById('wavecontrols').addEventListener('click', pauseGame);
+    document.getElementById('speed').addEventListener('click', resumeGame);
 
    //event listner for keyboard escape
    document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        deselectTower()
+    switch (e.code) {
+        case 'Escape':
+            deselectTower();
+            break;
+        case 'Space':
+            e.preventDefault();
+            //pause game
+            pauseGame();
+            break;
+        default:
+            break;
     }
-   });
+   }); 
 
-
- const drawUI = () => {
-    const waveInfo = waveManager.getWaveInfo();
-
-    //draw 'wave incoming
-    if(waveInfo.showWaveMessage) {
-        ctx.font = 'bold 24px sans-serif';
-        ctx.fillStyle = 'red';
-        ctx.textAlign = 'center';
-        ctx.fillText(`Wave ${waveInfo.currentWave} Incoming!`, canvas.width / 2, 50);
-        ctx.textAlign = 'left'; // reset alignment
-    }
-
-    ctx.font = '16px sans-serif';
-    ctx.fillStyle = 'white';
-    ctx.fillText(`Wave: ${waveInfo.currentWave}`, 110, 80);
-    ctx.fillText(`Total XP Killed: ${waveInfo.totalXPKilled}`, 110, 100);
-    ctx.fillText(`Lives left: ${gameLife - enemiesEscaped}`, 110, 120);
-    
-    // Draw wave progress bar (optional visual feedback)
-    const barWidth = 200;
-    const barHeight = 10;
-    const barX = 350;
-    const barY = 80;
-    
-    // Background
-    ctx.fillStyle = 'black';
-    ctx.fillRect(barX, barY, barWidth, barHeight);
-    
-    // Progress
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(barX, barY, barWidth * waveInfo.waveProgress, barHeight);
-    
-    // Border
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX, barY, barWidth, barHeight);
-    
-    // Progress text
-    ctx.fillStyle = 'white';
-    ctx.font = '12px sans-serif';
-    ctx.fillText(`Wave Progress: ${waveInfo.spentXP}/${waveInfo.totalXP} XP`, barX, barY + barHeight + 15);
-}
-
-
-// start game
-gameLoop();   
-
-
+gameLoop()
 // List of things to do:
 // 1. Add a way to end the game when lives reach 0
 // 2. Add a way to display the game over message
 // 3. ingame menu  
-// 5. add different types of towers
-// 6. add a way to upgrade towers and a round system of increasingly defficult oponents
+// 6. add a way to upgrade towers

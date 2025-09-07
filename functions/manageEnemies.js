@@ -5,9 +5,9 @@ import MoneyManager from '../classes/gameManagers/MoneyManager.js';
 let spawnTimer = 0; // Timer for spawning enemies
 let spawnInterval = 100; // Interval for spawning enemies in frames
 let enemies = []
+let enemiesEscaped = 0; // Counter for escaped enemies
 
-
-export default function manageEnemies(ctx, enemiesEscaped) {
+export default function manageEnemies(ctx) {
 
     //update wave message timer
     waveManager.updateWaveMessage();
@@ -63,4 +63,4 @@ export default function manageEnemies(ctx, enemiesEscaped) {
 
 
 // Export the enemies array for other modules to access
-export { enemies };
+export { enemies, enemiesEscaped };

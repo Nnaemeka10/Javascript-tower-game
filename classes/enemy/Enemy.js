@@ -1,8 +1,10 @@
+import { getTileSize } from '../../functions/resizeCanvas.js';
 import { path } from '../../maps/map1.js';
-import { TILE_SIZE } from '../../utils/constants.js';
+
 
 export default class Enemy {
     constructor(scaledHealth, baseHealth = 100, speed = 0.02, color = 'purple') {
+        
         this.currentTile = 0; // index in the path array
         this.progress = 0; // how far between the current tile and the next tile
         this.speed = speed; // speed of the enemy
@@ -13,9 +15,7 @@ export default class Enemy {
         this.xpCost = speed * baseHealth;
         
         this.baseHealth = baseHealth
-        const baseRadius = TILE_SIZE /3;
-        const healthMultiplier = Math.sqrt(baseHealth / 100);
-        this.radius = baseRadius * healthMultiplier;
+        
     }
 
     
@@ -23,6 +23,7 @@ export default class Enemy {
     updateEnemy() {
         if(this.currentTile >= path.length - 1) return; // Reached the end
 
+        const TILE_SIZE = getTileSize();
         const current = path[this.currentTile];
         const next = path[this.currentTile +1];
 
@@ -49,8 +50,10 @@ export default class Enemy {
 
     // draw method to render the enemy
     drawEnemy(ctx) {
-        
-
+        const TILE_SIZE = getTileSize();
+        const baseRadius = TILE_SIZE /3;
+        const healthMultiplier = Math.sqrt(this.baseHealth / 100);
+        this.radius = baseRadius * healthMultiplier;
         //determine enemy color(flash white when hit)
         let enemyColor = this.color;
         if (this.hitFlash > 0) {
@@ -64,7 +67,7 @@ export default class Enemy {
 
         // enemy health bar
         const barWidth = Math.max(TILE_SIZE / 2, this.radius * 1.5);
-        const barHeight = 5;
+        const barHeight = Math.max(TILE_SIZE/8, this.radius * 0.108);
         const x = this.pixelX - barWidth / 2;
         const y = this.pixelY - this.radius - 10;  //position above enemy
 

@@ -1,9 +1,9 @@
 import { path } from '../maps/map1.js';
-import { TILE_SIZE } from "../utils/constants.js";
 import { TOWER_CONFIG } from '../utils/towerConfig.js';
 import { createProjectile } from './manageProjectiles.js';
 import MoneyManager from '../classes/gameManagers/MoneyManager.js';
-import { ENEMY_CONFIG } from '../utils/enemyConfig.js';
+import { getTileSize } from './resizeCanvas.js';
+
 
 
 let towers = []; // Array to hold all towers
@@ -18,6 +18,7 @@ const towerTypes = Object.entries(TOWER_CONFIG).map(([name, cfg]) => {
 }) 
 
 export default function manageTower(mouseX, mouseY) {
+    const TILE_SIZE = getTileSize();
     const tileX = Math.floor(mouseX / TILE_SIZE);
     const tileY = Math.floor(mouseY / TILE_SIZE);
 

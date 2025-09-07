@@ -7,19 +7,47 @@
     <link rel="stylesheet" href="stylw.css">
 </head>
 <body>
+
+    <div id="game_info">
+        <button id="menu">Menu</button>
+        <p id="scores">Scores: 0</p>
+        <p id="score">Money: 500</p>
+        <p id="wave">
+            <span class="waveProgressBar"></span>
+            Wave: 0
+        </p>
+        <p id="enemies_escaped">Life: 0</p>
+    </div>
+
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-    <header>
-        <nav>
-            <div>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-            </div>
-        </nav>
-    </header>
+    <div id="user_controls">
+        <div id="towers_container">
+            <button id="arrow_card" class="towerCard">
+                <img src="assets/arrow_tower.png" alt="Arrow Tower" width="50" height="50">
+                <p>Arrow</p>
+                <p>price</p>
+            </button>
+
+            <button id="cannon_card" class="towerCard">
+                <img src="assets/cannon_tower.png" alt="Cannon Tower" width="50" height="50">
+                <p>Cannon</p>
+                <p>price</p>
+            </button>
+
+            <button id="flame_card" class="towerCard">
+                <img src="assets/magic_tower.png" alt="Magic Tower" width="50" height="50">
+                <p>Magic</p>
+                <p>price</p>
+            </button>
+        </div>
+
+        <div id="controls">
+            <button id="play">Play</button>
+            <button id="speed">speed</button>
+            <button id="wavecontrols">manual</button>
+        </div>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>

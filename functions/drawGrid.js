@@ -1,6 +1,9 @@
-import { TILE_SIZE, COLS, ROWS, canvas } from '../utils/constants.js';
+import { COLS, ROWS, canvas } from '../utils/constants.js';
+import { getTileSize } from './resizeCanvas.js';
+
 
 export default function drawGrid(ctx) {
+   const TILE_SIZE = getTileSize();
     ctx.strokeStyle = '#444';
 
     //Draw vertical lines

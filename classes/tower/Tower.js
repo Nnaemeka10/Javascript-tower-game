@@ -1,6 +1,9 @@
-import { TILE_SIZE } from '../../utils/constants.js';
+import { getTileSize } from "../../functions/resizeCanvas.js";
+
+
 
 export default class Tower {
+
     constructor(x, y, range = 2, fireRate = 60, damage = 10, color = 'blue', highlightColor = 'lightblue') {
         this.x = x; // grid column
         this.y = y; // grid row
@@ -10,10 +13,20 @@ export default class Tower {
         this.damage = damage; // damage dealt to enemies
         this.color = color; // color of the tower
         this.highlightColor = highlightColor; // color when selected
-        this.radius = TILE_SIZE / 3; // radius of the tower 
-        this.pixelX = this.x * TILE_SIZE + TILE_SIZE / 2; // center x position in pixels
-        this.pixelY = this.y * TILE_SIZE + TILE_SIZE / 2;
         this.currentTarget = null; // the enemy currently targeted by the tower
+    }
+
+    getPixelPosition() {
+        const TILE_SIZE = getTileSize();
+        return {
+            pixelX: this.x * TILE_SIZE + TILE_SIZE / 2,
+            pixelY: this.y * TILE_SIZE + TILE_SIZE / 2,
+        };
+    }
+
+    getRadius() {
+        const TILE_SIZE = getTileSize();
+        return TILE_SIZE / 3; // radius is one-third of the tile size
     }
 
 
@@ -40,9 +53,11 @@ export default class Tower {
     }
 
     isInRange(enemy) {
+        const TILE_SIZE = getTileSize();
+        const { pixelX, pixelY } = this.getPixelPosition();
         // Calculate the distance to the enemy
-        const deltaX =enemy.pixelX - this.pixelX; // difference in x
-        const deltaY = enemy.pixelY - this.pixelY; // difference in y
+        const deltaX =enemy.pixelX - pixelX; // difference in x
+        const deltaY = enemy.pixelY - pixelY; // difference in y
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY); // distance to the enemy
 
         //convert the range from tiles to pixels
@@ -73,12 +88,13 @@ export default class Tower {
 
         // If a target is found and the tower is ready to fire
         if (this.currentTarget && this.cooldown <= 0) {
+            const { pixelX, pixelY } = this.getPixelPosition();
             this.cooldown = this.fireRate; // Reset the cooldown timer  
             return {
                 shoot: true, // Indicate that the tower is shooting
                 target: this.currentTarget, // Return the target enemy
-                startX: this.pixelX, // Starting x position of the projectile
-                startY: this.pixelY, // Starting y position of the projectile
+                startX: pixelX, // Starting x position of the projectile
+                startY: pixelY, // Starting y position of the projectile
                 damage: this.damage // Damage dealt by the projectile
             };
         }
@@ -88,14 +104,17 @@ export default class Tower {
 
     // method to draw the tower
     draw(ctx, isSelected = false) {
+        const TILE_SIZE = getTileSize();
+        const { pixelX, pixelY } = this.getPixelPosition();
+        const radius = this.getRadius();
         
         //change the tower color based on selection
         ctx.fillStyle = isSelected ? this.highlightColor : this.color;
         ctx.beginPath();
         ctx.arc(
-            this.pixelX, // center x
-            this.pixelY, // center y
-            this.radius, // radius
+            pixelX, // center x
+            pixelY, // center y
+            radius, // radius
             0, // start angle
             Math.PI * 2 // end angle
         );
@@ -106,7 +125,7 @@ export default class Tower {
             ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(this.pixelX, this.pixelY, this.range * TILE_SIZE, 0, Math.PI * 2);
+            ctx.arc(pixelX, pixelY, this.range * TILE_SIZE, 0, Math.PI * 2);
             ctx.stroke();
         }
         
@@ -115,9 +134,9 @@ export default class Tower {
         ctx.lineWidth = 2;
         ctx.beginPath ();
         ctx.arc(
-            this.pixelX, // center x
-            this.pixelY, // center y
-            this.radius, // radius
+            pixelX, // center x
+            pixelY, // center y
+            radius, // radius
             0, // start angle
             Math.PI * 2 // end angle
         );
