@@ -1,9 +1,4 @@
-import Dragon from "./Dragon.js";
-import Dwarve from "./Dwarve.js";
-import Elve from "./Elve.js";
-import Goblin from "./Goblin.js";
-import Hobbit from "./Hobbit.js";
-
+import { ENEMY_CONFIG } from "../../utils/enemyConfig.js";
 
 class WaveManager {
     constructor() {
@@ -17,25 +12,58 @@ class WaveManager {
         this.waveMessageTimer = 0; //timer for wave message display
         this.totalXPKilled = 0; //track total xp for killed enemies
         
-        //Enemy types available for spawning
-        this.enemyTypes = [
-            //will edit this later with info from the goblin class
-            {class: Goblin, xpCost: 2},
-            {class: Dwarve, xpCost: 2},
-            {class: Elve, xpCost: 4},
-            {class: Hobbit, xpCost: 1},
-            {class: Dragon, xpCost: 2},
-        ];
+        //track which enemmies have spawned
+        this.spawnedEnemyTypes = new Set()
+        //track which enemy apperared and when each enemy spawned
+        this.firstSpawnWave = new Map();
+
+        //Enemy types available for spawning from the enemy config
+        this.enemyTypes = Object.entries(ENEMY_CONFIG).map(([name, cfg]) => {
+            const xpCost = cfg.speed * cfg.baseHealth;
+            return {
+                name,
+                class: cfg.class,
+                ...cfg,
+                xpCost,
+            };
+        });
     }
 
 
+    //Get scaled health for an enemy type
+    getScaledHealth (enemyType) {
+        const hasSpawned = this.spawnedEnemyTypes.has(enemyType.name);
+
+        if (!hasSpawned) {
+            //first time spawning
+            return enemyType.baseHealth;
+        } else {
+            // Calculate health increase 5 HP per wave since first spawn
+            const wavesSinceFirstSpawn = this.getWavesSinceFirstSpawn(enemyType.name);
+            const healthIncrease = wavesSinceFirstSpawn * 5 
+            return  enemyType.baseHealth + healthIncrease;
+        }
+    }
+
+    //track when enemy type first spawned
+    getWavesSinceFirstSpawn(enemyTypeName) {
+        //we will store this data in a map later for more precision
+        if(!this.firstSpawnWave.has(enemyTypeName)) {
+            return 0;
+        }
+
+        const firstWave = this.firstSpawnWave.get(enemyTypeName);
+        return this.currentWave - firstWave
+        
+    }
     //Get available enemy types based on the current wave
     getAvailableEnemyTypes () {
+
         let availableTypes = []
 
         if (this.currentWave <= 3) {
             //rule 1, no elves until wave 4
-            availableTypes = this.enemyTypes.filter(type => type.class !== Elve );
+            availableTypes = this.enemyTypes.filter(type => type.name !== "Elve");
         } else if (this.currentWave <= 10) {
             //probability based elve spawning from wave 4-10
             const elfProbability = (this.currentWave -3) / 8; // gradually increase from 12.5% to close to 100%
@@ -43,7 +71,7 @@ class WaveManager {
             if(Math.random() < elfProbability) {
                 availableTypes = this.enemyTypes; //include elves
             } else {
-                availableTypes = this.enemyTypes.filter(type => type.class !== Elve);
+                availableTypes = this.enemyTypes.filter(type => type.name !== "Elve");
             }
         } else {
             //wave 10 and above, all enemies available equally
@@ -81,7 +109,20 @@ class WaveManager {
 
         if (enemyType) {
             this.spentXP += enemyType.xpCost;
-            return new enemyType.class();
+
+            // mark enemy as recently spawned
+            this.spawnedEnemyTypes.add(enemyType.name);
+            
+            //record the wave spawned
+            if (!this.firstSpawnWave.has(enemyType.name)) {
+                this.firstSpawnWave.set(enemyType.name, this.currentWave);
+            }
+
+            //create enemy with scaled health
+            const scaledHealth = this.getScaledHealth(enemyType)
+            
+            //pass scaled health into constructor
+            return new enemyType.class(scaledHealth)
         } else {
             //can't afford any more enemies, our get affordable enemy returned null
             this.allEnemiesSpawned = true;
@@ -137,6 +178,12 @@ class WaveManager {
             totalXP: this.currentWaveXP,
             waveProgress: this.spentXP / this.currentWaveXP  
         };
+    }
+
+    //get current health for debugging
+    getCurrentHealthForType(enemyTypeName) {
+        const enemyType = this.enemyTypes.find(type => type.name === enemyTypeName);
+        return enemyType ? this.getScaledHealth(enemyType) : null;
     }
 
 }

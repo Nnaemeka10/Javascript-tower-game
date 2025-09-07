@@ -1,22 +1,24 @@
-import { path } from '../maps/map1.js';
-import { TILE_SIZE } from '../utils/constants.js';
+import { path } from '../../maps/map1.js';
+import { TILE_SIZE } from '../../utils/constants.js';
 
 export default class Enemy {
-    constructor(health = 100, speed = 0.02, color = 'purple') {
+    constructor(scaledHealth, baseHealth = 100, speed = 0.02, color = 'purple') {
         this.currentTile = 0; // index in the path array
         this.progress = 0; // how far between the current tile and the next tile
         this.speed = speed; // speed of the enemy
-        this.maxHealth = health; // max health of the enemy
-        this.currentHealth = health; // current health of the enemy
+        this.scaledHealth = scaledHealth; // max health of the enemy
+        this.currentHealth = scaledHealth; // current health of the enemy
         this.color = color
         this.hitFlash = 0; // frames remaining for the hit flash effect
-        this.xpCost = speed * health;
+        this.xpCost = speed * baseHealth;
         
+        this.baseHealth = baseHealth
         const baseRadius = TILE_SIZE /3;
-        const healthMultiplier = Math.sqrt(health / 100);
+        const healthMultiplier = Math.sqrt(baseHealth / 100);
         this.radius = baseRadius * healthMultiplier;
     }
 
+    
     // update method to move the enemy along the path
     updateEnemy() {
         if(this.currentTile >= path.length - 1) return; // Reached the end
@@ -47,6 +49,7 @@ export default class Enemy {
 
     // draw method to render the enemy
     drawEnemy(ctx) {
+        
 
         //determine enemy color(flash white when hit)
         let enemyColor = this.color;
@@ -70,7 +73,7 @@ export default class Enemy {
         ctx.fillRect(x, y, barWidth, barHeight);
 
         //formatting the health bar with color coding
-        const healthRatio = this.currentHealth / this.maxHealth;
+        const healthRatio = this.currentHealth / this.scaledHealth;
         let healthColor = 'limegreen'; 
         if (healthRatio < 0.3) {
             healthColor = 'red'; // Low health
@@ -88,6 +91,7 @@ export default class Enemy {
 
     //check if the enemy is dead
     isDead() {
+        
         return this.currentHealth <= 0;
     }
 

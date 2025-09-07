@@ -1,4 +1,4 @@
-import Projectile from "../classes/Projectile.js";
+import Projectile from "../classes/projectile/Projectile.js";
 
 let projectiles = []; // Array to hold all projectiles
 

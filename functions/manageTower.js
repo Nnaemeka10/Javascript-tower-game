@@ -1,14 +1,23 @@
 import { path } from '../maps/map1.js';
 import { TILE_SIZE } from "../utils/constants.js";
-import Tower from "../classes/Tower.js";
+import { TOWER_CONFIG } from '../utils/towerConfig.js';
 import { createProjectile } from './manageProjectiles.js';
+import MoneyManager from '../classes/gameManagers/MoneyManager.js';
+import { ENEMY_CONFIG } from '../utils/enemyConfig.js';
 
 
 let towers = []; // Array to hold all towers
 let selectedTower = null; // Currently selected tower for upgrades or actions
 
+const towerTypes = Object.entries(TOWER_CONFIG).map(([name, cfg]) => {
+    return {
+        name,
+        class: cfg.class, 
+        ...cfg
+    }
+}) 
 
-export default function manageTower(mouseX, mouseY, ctx) {
+export default function manageTower(mouseX, mouseY) {
     const tileX = Math.floor(mouseX / TILE_SIZE);
     const tileY = Math.floor(mouseY / TILE_SIZE);
 
@@ -36,10 +45,13 @@ export default function manageTower(mouseX, mouseY, ctx) {
     const towerExists = towers.some(t => t.x === tileX && t.y === tileY);
 
 
-    if (!onPath && !towerExists) {
+    if (!onPath && !towerExists && MoneyManager.canAfford(towerTypes[0].cost)) {
+       
     
         // Create a new tower at the clicked position
-        towers.push(new Tower(tileX, tileY));
+        const newTower = new towerTypes[0].class(tileX, tileY);
+        towers.push(newTower);
+        MoneyManager.spendMoney(towerTypes[0].cost);
 
         selectedTower = null;
     } else {
@@ -81,3 +93,22 @@ export function deselectTower() {
     selectedTower = null;
 }
 export { towers };
+
+//function to remove tower (for future sell feature)
+export function removeTower(tower) {
+    const index = towers.indexOf(tower);
+    if (index > -1) {
+        towers.splice(index, 1);
+        if (selectedTower === tower) {
+            selectedTower = null; // Deselect if the removed tower was selected
+        }
+        return true;
+    }
+    return false;
+}
+
+//function to reset towers (for game over, etc)
+export function resetTowers() {
+    towers = [];
+    selectedTower = null;
+}

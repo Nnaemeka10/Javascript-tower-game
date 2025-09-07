@@ -1,8 +1,9 @@
 import { path } from '../maps/map1.js';
-import waveManager from '../classes/WaveManager.js';
+import waveManager from '../classes/gameManagers/WaveManager.js';
+import MoneyManager from '../classes/gameManagers/MoneyManager.js';
 
 let spawnTimer = 0; // Timer for spawning enemies
-let spawnInterval = 50; // Interval for spawning enemies in frames
+let spawnInterval = 100; // Interval for spawning enemies in frames
 let enemies = []
 
 
@@ -29,6 +30,12 @@ export default function manageEnemies(ctx, enemiesEscaped) {
         //remove if dead
         if (enemy.currentHealth <= 0) {
             waveManager.addKillXP(enemy);
+
+            //add money for kill
+            MoneyManager.addMoney(enemy);
+
+            //more visuals to be added here like coin moving up to the coin bar
+
             return false; // Remove enemy from the array
         }
 
