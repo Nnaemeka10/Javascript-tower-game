@@ -107,8 +107,7 @@ const gameLoop = () => {
 
         //try to continue or stop gracefully
         animationID = requestAnimationFrame(gameLoop);
-    }
-    
+    }  
 };
 
 // Setup all event Listeners
@@ -117,11 +116,19 @@ function setupEventListeners() {
     canvas.addEventListener('click', handleMouseClick);
 
     // Game control buttons
-    const startWave = document.getElementById('Start-Wave');
+    const startWave = document.getElementById('start');
     const pause = document.getElementById('pause');
-    const endGame = document.getElementById('End-Game');
 
-    if (startWave) startWave.addEventListener('click', startGame);
+
+    if (startWave) startWave.addEventListener('click', () => {
+        if(gameRunning) {
+            stopGame()
+        }else {
+            startGame()
+        }
+    });
+
+
     if (pause) pause.addEventListener('click', () => {
         if(gameRunning) {
             if(gamePaused) {
@@ -131,7 +138,7 @@ function setupEventListeners() {
             }
         }
     });
-    if (endGame) endGame.addEventListener('click', stopGame);
+
 
     // Keyboard events
     document.addEventListener('keydown', handleKeyPress);
@@ -257,12 +264,21 @@ const stopGame = () => {
 
 function updateGameControlUI() {
     const playButton = document.getElementById('pause');
+    const startButton = document.getElementById('start')
 
     if (playButton) {
         if (gameRunning && !gamePaused) {
             playButton.textContent = '⏸️';
         }else {
             playButton.textContent = '▶️';
+        }
+    }
+
+    if(startButton) {
+        if(gameRunning) {
+            startButton.textContent = 'End';
+        }else {
+            startButton.textContent = 'Start';
         }
     }
 }
