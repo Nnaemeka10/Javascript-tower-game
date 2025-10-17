@@ -1,21 +1,252 @@
-*{
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+/* ===================================================== */
+/*                  GLOBAL RESET + BASE                  */
+/* ===================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-body {   
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #111;
+
+html {
+  font-size: clamp(14px, 1vw + 1rem, 18px);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  max-height: 100vh;
+  max-width: 100vw;
+  background-color: #111;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===================================================== */
+/*                  GAME LAYOUT WRAPPER                  */
+/* ===================================================== */
+#game-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-auto-rows: auto;
+  grid-auto-flow: row;
+  gap: 1vh;
+  padding: 2vw;
+}
+
+
+/* ===================================================== */
+/*                  GAME INFO (TOP BAR)                  */
+/* ===================================================== */
+#game_info {
+  display: flex;
+  gap: 5vw;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1vh 2vw;
+  font-size: 0.8rem;
+  
+}
+
+#game_info p,
+#game_info div {
+  margin: 0;
+  font-weight: bold;
+}
+
+
+
+/* ===================================================== */
+/*                        CANVAS                         */
+/* ===================================================== */
+#game-container {
+  display: flex;
+  justify-content: center;
+  order: 2;
 }
 
 canvas {
-    border: 1px solid #fff;
-    background-color: #222;
+  border: 2px solid #555;
+  background-color: #222;
+  display: block;
+  /* ⚠️ dimensions handled only by JS */
 }
 
+
+/* ===================================================== */
+/*                  SIDEBAR (CONTROLS)                   */
+/* ===================================================== */
+#user_control {
+  padding: 2vw;
+  width: 90%;
+  display: flex;
+  flex-direction: row;
+  gap: 5%;
+  justify-content: space-between;
+  align-items: center;
+  order: 3;
+}
+
+#towers_container {
+  display: flex;
+  width: 55%;
+  gap: 5%;
+}
+
+/* ===================================================== */
+/*                      TOWER CARDS                      */
+/* ===================================================== */
+.towerCard {
+  min-width: fit-content;
+  min-height: fit-content;
+  flex:1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px;
+  background: #1b1b1b;
+  border: 2px solid #333;
+  border-radius: 10px;
+  cursor: grab;
+  transition: transform 0.2s, background 0.2s, border 0.2s;
+}
+
+.towerCard img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.towerCard:hover {
+  background: #2a2a2a;
+  border: 2px solid #666;
+  transform: scale(1.05);
+}
+
+.towerCard p {
+  font-size: 0.4rem;
+  color: #ddd;
+}
+
+.towerCard h2 {
+  white-space: nowrap;
+  font-size: min(0.8rem, 1ch);
+}
+
+/* ===================================================== */
+/*                    CONTROL BUTTONS                    */
+/* ===================================================== */
+#controls {
+  display: flex;
+  flex-direction: row;
+  gap: 10%;
+}
+
+#controls button { 
+  width: 10vh;
+  height:5vh;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 6px;
+  background: #444;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.5rem;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+#controls button:hover {
+  background: #666;
+}
+
+/* ===================================================== */
+/*                  WAVE PROGRESS BAR                    */
+/* ===================================================== */
+
+ #wave {
+    position: relative;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+.waveBar {
+  flex: 1;
+  height: 8px;
+  width: 40px;
+  background: black;
+  border: 2px solid whitesmoke;
+  border-radius: 1vw;
+  overflow: hidden;
+}
+
+.waveBar .waveFill {
+  display: block;
+  height: 100%;
+  width: 0%; /* starts empty */
+  background: linear-gradient(90deg, #ffcc00, #ff6600);
+  transition: width 0.3s ease-in-out;
+}
+
+/* ===================================================== */
+/*                      RESPONSIVE                       */
+/* ===================================================== */
+@media (min-width: 768px) {
+  #game-layout {
+    grid-template-columns: 1fr 40vw;
+    grid-template-rows: auto auto;
+    gap: 1vw;
+  }
+
+  
+  #game_info {
+    grid-column: 2 / 3;
+    grid-row: 1;
+    gap: 2vw;
+    flex-wrap: wrap;
+  }
+
+  #user_control {
+    grid-column: 2 / 3;
+    grid-row: 2;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: start;
+  }
+
+  #game-container{
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+  }
+
+
+  #towers_container {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+
+  #wave {
+    position: relative;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .waveBar{
+    translate: 0px 6px;
+  }
+}
+
+/* ===================================================== */
+/*                  MEDIA QUERIES (DESKTOP)              */
+/* ===================================================== */
+/* ...existing media query styles... */
+
+
+/* ===================================================== */
+/*                  WAVE BAR (DESKTOP)                   */
+/* ===================================================== */

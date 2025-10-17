@@ -35,8 +35,7 @@ export default function manageTower(mouseX, mouseY) {
             selectedTower = clickedTower;
         }
 
-        console.log('Tower Selected/ deselected');
-        return;
+        return { success: true, reason: 'tower_selected' };
     }
 
     //if we didn't click on a tower, try to place a new one
@@ -44,21 +43,32 @@ export default function manageTower(mouseX, mouseY) {
     const onPath = path.some(tile => tile.x === tileX && tile.y === tileY);
 
     const towerExists = towers.some(t => t.x === tileX && t.y === tileY);
+    const towerType = towerTypes[0]; // Default to the first tower type for now
+    const cost = towerType.cost;
 
-
-    if (!onPath && !towerExists && MoneyManager.canAfford(towerTypes[0].cost)) {
-       
-    
-        // Create a new tower at the clicked position
-        const newTower = new towerTypes[0].class(tileX, tileY);
-        towers.push(newTower);
-        MoneyManager.spendMoney(towerTypes[0].cost);
-
-        selectedTower = null;
-    } else {
-        selectedTower = null;
+    if (onPath) {
+        return { success: false, reason: 'on_path' };
     }
+
+    if (towerExists) {
+        return { success: false, reason: 'tower_exists' };
+    }
+
+    if(!MoneyManager.canAfford(cost)) {
+        return { success: false, reason: 'insufficient_funds', cost};
+    }
+
+    
+    // Create a new tower at the clicked position
+        const newTower = new towerType.class(tileX, tileY);
+        towers.push(newTower);
+        MoneyManager.spendMoney(cost);
+        selectedTower = null;
+
+        return { success: true, reason: 'tower_placed'};
 }
+
+
 
 // Function to handle tower shooting 
 export function handleTowerShooting(enemies) {
@@ -93,7 +103,7 @@ export function getSelectedTower () {
 export function deselectTower() {
     selectedTower = null;
 }
-export { towers };
+
 
 //function to remove tower (for future sell feature)
 export function removeTower(tower) {
@@ -113,3 +123,11 @@ export function resetTowers() {
     towers = [];
     selectedTower = null;
 }
+
+export function getTowerCost(typeName = towerTypes[0].name) {
+    const towerType = towerTypes.find(t => t.name === typeName);
+    return towerType ? towerType.cost : 0;
+} 
+
+
+export { towers };

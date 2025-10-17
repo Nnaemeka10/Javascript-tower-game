@@ -1,0 +1,5 @@
+
+const gameState = {
+    play,
+    pause,
+}

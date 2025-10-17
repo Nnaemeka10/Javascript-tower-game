@@ -7,11 +7,8 @@ let spawnInterval = 100; // Interval for spawning enemies in frames
 let enemies = []
 let enemiesEscaped = 0; // Counter for escaped enemies
 
-export default function manageEnemies(ctx) {
 
-    //update wave message timer
-    waveManager.updateWaveMessage();
-
+function spawnEnemies() {
     spawnTimer++;
     if (spawnTimer % spawnInterval === 0) {
 
@@ -22,7 +19,15 @@ export default function manageEnemies(ctx) {
         }
 
     }
+}
 
+//update enemy state
+function updateEnemies() {
+
+    //update wave message timer
+    waveManager.updateWaveMessage();
+    spawnEnemies();
+   
     // update and draw each enemy
     enemies = enemies.filter((enemy) => {
         enemy.updateEnemy();
@@ -51,16 +56,25 @@ export default function manageEnemies(ctx) {
     if(waveManager.checkWaveComplete(enemies)) {
         waveManager.startNextWave();
     }
-    // draw each enemy
-    for (const enemy of enemies) {
-        enemy.drawEnemy(ctx);
-    }
 
-    // Return the number of enemies escaped
     return enemiesEscaped;
 }
 
+//Draw all enemies
+function drawEnemies(ctx) {
+    for (const enemy of enemies) {
+        enemy.drawEnemy(ctx);
+    }
+}
+
+
+function resetEnemies () {
+    spawnTimer = 0; // Timer for spawning enemies
+    spawnInterval = 100; // Interval for spawning enemies in frames
+    enemies = []
+    enemiesEscaped = 0
+}
 
 
 // Export the enemies array for other modules to access
-export { enemies, enemiesEscaped };
+export {updateEnemies, drawEnemies, resetEnemies,enemies, enemiesEscaped };

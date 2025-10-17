@@ -9,7 +9,7 @@ class MoneyManager {
 
     addMoney(enemy) {
         //calculate Money
-        const rawMoney = enemy.scaledHealth * enemy.speed;
+        const rawMoney = (enemy.scaledHealth * enemy.speed)*0.5;
         const roundedMoney = Math.round(rawMoney) * 10;
 
         this.currentMoney += roundedMoney;

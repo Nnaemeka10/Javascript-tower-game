@@ -186,6 +186,27 @@ class WaveManager {
         return enemyType ? this.getScaledHealth(enemyType) : null;
     }
 
+
+    
+    reset () {
+
+        this.currentWave = 1;
+        this.baseXP = 10; //starting xp budget for wave 1
+        this.currentWaveXP = this.baseXP;
+        this.spentXP = 0; //XP spent in current wavw
+        this.waveInProgress = true;
+        this.allEnemiesSpawned = false; //flag to track enemy spawning
+        this.showWaveMessage = false; //flag to show incoming wave message
+        this.waveMessageTimer = 0; //timer for wave message display
+        this.totalXPKilled = 0; //track total xp for killed enemies
+        
+        //track which enemmies have spawned
+        this.spawnedEnemyTypes = new Set()
+        //track which enemy apperared and when each enemy spawned
+        this.firstSpawnWave = new Map();
+    }
+
 }
+
 
 export default new WaveManager();

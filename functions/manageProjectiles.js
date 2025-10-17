@@ -2,7 +2,8 @@ import Projectile from "../classes/projectile/Projectile.js";
 
 let projectiles = []; // Array to hold all projectiles
 
-export default function manageProjectiles(ctx) {
+
+function updateProjectiles() {
     //update each projectile
     projectiles = projectiles.filter((projectile)=> {
         projectile.update();
@@ -14,19 +15,26 @@ export default function manageProjectiles(ctx) {
 
         return true; // Keep the projectile in the array
     });
+}
 
+
+function drawProjectiles(ctx) {
     // draw each projectile
     for (const projectile of projectiles) {
+        console.log(projectiles)
         projectile.draw(ctx);
     }
 }
-
 // Function to create a new projectile
-export function createProjectile(startX, startY, targetEnemy, damage) {
+function createProjectile(startX, startY, targetEnemy, damage) {
     if (targetEnemy && targetEnemy.currentHealth > 0) {
         projectiles.push(new Projectile(startX, startY, targetEnemy, damage));
     }
 }
 
+function resetProjectiles () {
+    projectiles = []
+}
+
 // Export the projectile array for other modules to access
-export { projectiles };
+export {updateProjectiles, drawProjectiles, createProjectile, resetProjectiles, projectiles };
