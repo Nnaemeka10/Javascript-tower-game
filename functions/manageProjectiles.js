@@ -21,7 +21,6 @@ function updateProjectiles() {
 function drawProjectiles(ctx) {
     // draw each projectile
     for (const projectile of projectiles) {
-        console.log(projectiles)
         projectile.draw(ctx);
     }
 }

@@ -9,7 +9,7 @@ import drawUI from "./functions/drawUI.js";
 import { getTowerCost } from "./functions/manageTower.js";
 
 
-export const gameLife = 20;
+export let gameLife = 20;
 
 
 
@@ -20,6 +20,10 @@ import MoneyManager from "./classes/gameManagers/MoneyManager.js";
 //game states
 let gamePaused = false;
 let gameRunning = false;
+let isDragging = false;
+let draggingTowerType = null;
+let mouseyX = 0;
+let mouseyY = 0;
 let animationID;
 // Initialize canvas and context
 let canvas = null
@@ -96,8 +100,8 @@ const gameLoop = () => {
         };
         
           //always draw game ui
-          // draw text for enemies escaped
-           // draw towers
+         // draw text for enemies escaped
+        // draw towers
           drawUI(ctx);
 
         // loop on next frame
@@ -112,13 +116,25 @@ const gameLoop = () => {
 
 // Setup all event Listeners
 function setupEventListeners() {
-    // mouse click for tower placement
-    canvas.addEventListener('click', handleMouseClick);
-
     // Game control buttons
     const startWave = document.getElementById('start');
     const pause = document.getElementById('pause');
 
+    const towerDivs = [...document.getElementsByClassName('towerCard')];
+   
+
+    //start drag
+    towerDivs.forEach(towerDiv => {
+        towerDiv.addEventListener('pointerdown', startDrag);
+    });
+  
+    //end drag
+    canvas.addEventListener ('pointerup', endDrag)
+
+
+    // mouse click for tower placement
+    canvas.addEventListener('click', handleMouseClick);
+        
 
     if (startWave) startWave.addEventListener('click', () => {
         if(gameRunning) {
@@ -147,7 +163,70 @@ function setupEventListeners() {
     window.addEventListener('canvasResized', handleCanvasResize);
 }
 
-// Handle mouse click
+// Handle dragging to position
+function startDrag () {
+    isDragging = true;
+    draggingTowerType = 'arrow';
+
+    canvas.addEventListener('pointermove', handleDrag)
+}
+
+function endDrag (e) {
+    try {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        if(isDragging) {
+
+            if(gameRunning && !gamePaused) {
+                //this will add a tower at the dragged position
+                const result = manageTower(mouseX, mouseY);
+
+                //provide feedback
+                if(!result.success) {
+                    handleTowerPlacementError(result.reason)
+                } 
+
+            }
+
+            isDragging = false;
+            draggingTowerType = null;
+            canvas.removeEventListner('pointermove', handleDrag);
+        }
+    } catch (error){
+
+    }
+}
+
+//manage drag
+function handleDrag(e) {
+    const ctx = getCtx();
+
+    const rect = canvas.getBoundingClientRect();
+    mouseyX = e.clientX - rect.left;
+    mouseyY = e.clientY - rect.top;
+
+    // //show dragging highlight // will be managed later when there are tiles and images
+    // if (isDragging && draggingTowerType) {
+    // ctx.globalAlpha = 0.6;
+    // ctx.drawImage(towerDiv, mouseyX - 20, mouseyY - 20, 40, 40);
+    // ctx.globalAlpha = 1;
+    // }
+
+    //highlight box
+    if (isDragging) {
+        console.log('hi') 
+        ctx.strokeStyle = manageTower(mouseyX, mouseyY).success ? 'green' : 'red';
+        ctx.strokeRect(
+        Math.floor(mouseyX / 40) * 40,
+        Math.floor(mouseyY / 40) * 40,
+        40, 40
+        );
+    }
+
+}
+
 // Event listener for mouse click to manage tower placement
 function handleMouseClick(e) {
     try {
@@ -160,7 +239,7 @@ function handleMouseClick(e) {
             // This will add a tower at the clicked position if it's not on the path and no tower exists there
             const result = manageTower(mouseX, mouseY);
 
-            //provide user feedback
+            //provide  feedback
             if(!result.success) {
                 handleTowerPlacementError(result.reason);
             }
@@ -336,3 +415,7 @@ function resetGameState() {
 
 // rocket launcher
 // automatic gun
+
+// perspective/ tilt the playing surface
+// increment troop type per level
+// make the level 
