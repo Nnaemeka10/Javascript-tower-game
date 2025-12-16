@@ -1,6 +1,6 @@
-import Archer from "../classes/tower/towers/archer.js";
-import Cannon from "../classes/tower/towers/cannon.js";
-import Flamethrower from "../classes/tower/towers/flamethrower.js";
+import Archer from "../../../classes/tower/towers/archer.js";
+import Cannon from "../../../classes/tower/towers/cannon.js";
+import Flamethrower from "../../../classes/tower/towers/flamethrower.js";
 
 export const TOWER_CONFIG = {
     Archer: {

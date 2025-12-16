@@ -1,4 +1,4 @@
-import { startingBudget as defaultBudget } from "../../utils/constants.js";
+import { startingBudget as defaultBudget } from "../../src/utils/constants.js";
 
 class MoneyManager {
     constructor ( startingBudget = defaultBudget) {

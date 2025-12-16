@@ -1,5 +1,5 @@
 
-import { COLS, ROWS } from '../utils/constants.js';
+import { COLS, ROWS } from '../src/utils/constants.js';
 
 // ----------------------
 // Module state

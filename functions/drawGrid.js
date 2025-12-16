@@ -1,4 +1,4 @@
-import { COLS, ROWS} from '../utils/constants.js';
+import { COLS, ROWS} from '../src/utils/constants.js';
 import { getTileSize } from './resizeCanvas.js';
 import { getCanvasDimensions } from './resizeCanvas.js';
 

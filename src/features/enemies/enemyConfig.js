@@ -1,8 +1,8 @@
-import Dragon from "../classes/enemy/enemies/Dragon.js";
-import Dwarve from "../classes/enemy/enemies/Dwarve.js";
-import Elve from "../classes/enemy/enemies/Elve.js";
-import Goblin from "../classes/enemy/enemies/Goblin.js";
-import Hobbit from "../classes/enemy/enemies/Hobbit.js";
+import Dragon from "../../../classes/enemy/enemies/Dragon.js";
+import Dwarve from "../../../classes/enemy/enemies/Dwarve.js";
+import Elve from "../../../classes/enemy/enemies/Elve.js";
+import Goblin from "../../../classes/enemy/enemies/Goblin.js";
+import Hobbit from "../../../classes/enemy/enemies/Hobbit.js";
 
 export const ENEMY_CONFIG = {
   Dwarve: {

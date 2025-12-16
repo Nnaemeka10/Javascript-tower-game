@@ -1,4 +1,4 @@
-import { path } from '../maps/map1.js';
+import { path } from '../src/maps/maps/map1.js';
 import { getTileSize } from './resizeCanvas.js';
 
 

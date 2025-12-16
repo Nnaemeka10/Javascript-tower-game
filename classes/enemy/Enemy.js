@@ -1,5 +1,5 @@
 import { getTileSize } from '../../functions/resizeCanvas.js';
-import { path } from '../../maps/map1.js';
+import { path } from '../../src/maps/maps/map1.js';
 
 
 export default class Enemy {

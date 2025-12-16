@@ -1,5 +1,5 @@
-import { path } from '../maps/map1.js';
-import { TOWER_CONFIG } from '../utils/towerConfig.js';
+import { path } from '../src/maps/maps/map1.js';
+import { TOWER_CONFIG } from '../src/features/towers/towerConfig.js';
 import { createProjectile } from './manageProjectiles.js';
 import MoneyManager from '../classes/gameManagers/MoneyManager.js';
 import { getTileSize } from './resizeCanvas.js';

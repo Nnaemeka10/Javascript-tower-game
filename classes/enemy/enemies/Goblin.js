@@ -1,4 +1,4 @@
-import { ENEMY_CONFIG } from '../../../utils/enemyConfig.js';
+import { ENEMY_CONFIG } from '../../../src/features/enemies/enemyConfig.js';
 import Enemy from '../Enemy.js'
 
 export default class Goblin extends Enemy {
