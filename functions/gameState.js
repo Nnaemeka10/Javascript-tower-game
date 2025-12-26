@@ -320,66 +320,309 @@ class GameState {
     // WAVE MANAGEMENT METHODS
     // ========================
 
-    setCurrentWave (){}
+    /**
+     * set current wave
+     * @param {number} wave - Wave number
+     */
+    setCurrentWave (wave){
+        if(this.currentWave !== wave){
+            this.currentWave = wave;
+            this.notifyListeners('waveChanged', wave);
+        }
+    }
 
-    getCurrentWave (){}
+    /**
+     * get current wave
+     * @returns {number} -current wave number
+     */
+    getCurrentWave (){
+        return this.currentWave
+    }
 
-    setTotalWaves() {}
 
-    getTotalWaves() {}
+    /**
+     * set total waves
+     * @param {number} total - Total number of waves
+     */
+    setTotalWaves(total) {
+        this.totalWaves = total;
+    }
 
-    startWave () {}
 
-    completeWave () {}
+    /**
+     * get total waves
+     * @returns {number} - total waves 
+     */
+    getTotalWaves() {
+        return this.totalWaves;
+    }
 
-    hasWaveStarted(){}
 
-    isWaveCompleted(){}
+    /**
+     * Start a wave
+     */
+    startWave () {
+        this.waveStarted = true;
+        this.waveCompleted = false;
+        this.notifyListeners('waveStarted', this.currentWave);
+    }
+
+
+    /**
+     * complete a wave
+     */
+    completeWave () {
+        this.waveCompleted = true;
+        this.notifyListeners('waveCompleted', this.currentWave)
+    }
+
+
+    /**
+     * get wave started state
+     * @returns {boolean} - has the wave started
+     */
+    hasWaveStarted(){
+        return this.waveStarted
+    }
+
+    /**
+     * get wave completed state
+     * @returns {boolean} - has the wave completed
+     */
+    isWaveCompleted(){
+        return this.waveCompleted;
+    }
 
     // ==================
     // UI STATE METHODS
     // ==================
-    selectedTowerType(){}
 
-    getSelectedTowerType (){}
+    /**
+     * Select a tower type
+     * @param {string } towerType - Tower type to select
+     * 
+    */
+    selectTowerType(towerType){
+        if(this.selectedTowerType !== towerType) {
+            this.selectedTowerType == towerType;
+            this.notifyListeners('towerTypeSelected', towerType);
+        }
+    }
 
-    deselectTowerType(){}
+     /**
+     * Deselect tower type
+     */
+    deselectTowerType() {
+        this.selectedTowerType = null;
+        this.notifyListeners('towerTypeDeselected');
+    }
 
-    setTowerDragging(){}
+    /**
+     * Get selected tower type
+     * @returns {string|null} Selected tower type or null
+     */
+    getSelectedTowerType() {
+        return this.selectedTowerType;
+    }
 
-    isTowerDragging(){}
+   
+    /**
+     * set tower dragging state
+     * @param {boolean} isDragging -is Dragging
+     */
+    setTowerDragging(isDragging){
+        this.isDraggingTower = isDragging;
+        this.notifyListeners('towerDragStateChanged', isDragging);
+    }
 
-    setDraggedTowerPosition(){}
+    /**
+     * Get tower dragging state
+     * @returns {boolean} Is dragging tower
+     */
+    isTowerDragging() {
+        return this.isDraggingTower;
+    }
 
-    getDraggedTowerPosition () {}
 
-    setHoveredGridCell(){}
+    /**
+     * set draggged tower position
+     * @param {number} x - Position on X axis
+     * @param {number} y -Position on Y axis
+     */
+    setDraggedTowerPosition(x, y){
+        this.draggedTowerPosition = {x, y};
+        this.notifyListeners('draggedTowerPositionChanged', this.draggedTowerPosition);
+    }
 
-    getHoveredGridCell(){}
+    
+    /**
+     * Get dragged tower position
+     * @returns {Object} Position {x, y}
+     */
+    getDraggedTowerPosition() {
+        return this.draggedTowerPosition;
+    }
 
-    clearHoveredGridCell(){}
+    /**
+     * Set hovered grid cell
+     * @param {number} gridX - Grid X coordinate
+     * @param {number} gridY - Grid Y coordinate
+     */
+    setHoveredGridCell(gridX, gridY) {
+        this.hoveredGridCell = { gridX, gridY };
+        this.notifyListeners('gridCellHovered', this.hoveredGridCell);
+    }
+
+    /**
+     * Clear hovered grid cell
+     */
+    clearHoveredGridCell() {
+        this.hoveredGridCell = null;
+    }
+
+    /**
+     * Get hovered grid cell
+     * @returns {Object|null} Grid cell {gridX, gridY} or null
+     */
+    getHoveredGridCell() {
+        return this.hoveredGridCell;
+    }
+
+    
 
     // ============================
     //  CANVAS PERFORMANCE METHODS
     // =============================
 
-    setCanvasDimensions
-    getCanvasDimensions
-    setFPS
-    getFPS
-    setDeltaTime
-    getDeltaTime
+    /**
+     * Set canvas dimensions
+     * @param {number} width - Canvas width
+     * @param {number} height - Canvas height
+     */
+    setCanvasDimensions(width, height) {
+        this.canvasWidth = width;
+        this.canvasHeight = height;
+        this.notifyListeners('canvasDimensionsChanged', { width, height });
+    }
+
+    /**
+     * Get canvas dimensions
+     * @returns {Object} Dimensions {width, height}
+     */
+    getCanvasDimensions() {
+        return { width: this.canvasWidth, height: this.canvasHeight };
+    }
+
+    /**
+     * Set FPS
+     * @param {number} fps - Frames per second
+     */
+    setFPS(fps) {
+        this.fps = fps;
+        this.notifyListeners('fpsChanged', fps);
+    }
+
+    /**
+     * Get FPS
+     * @returns {number} Current FPS
+     */
+    getFPS() {
+        return this.fps;
+    }
+
+    /**
+     * Set delta time
+     * @param {number} deltaTime - Delta time in seconds
+     */
+    setDeltaTime(deltaTime) {
+        this.deltaTime = deltaTime;
+    }
+
+    /**
+     * Get delta time
+     * @returns {number} Delta time in seconds
+     */
+    getDeltaTime() {
+        return this.deltaTime;
+    }
+
+
+
+
 
     // ===================
     // STATISTICS METHODS
     // ===================
-    incrementEnemiesKilled(){}
-    incrementTowersPlaced
-    getStatistics
-    updateHighScore
-    getHighScore
-    saveHighSCore
-    loadHighScore
+
+    /**
+     * Increment enemies killed
+     * @param {number} amount - Amount to increment
+     */
+    incrementEnemiesKilled(amount = 1) {
+        this.stats.totalEnemiesKilled += amount;
+        this.notifyListeners('statisticsChanged', this.stats);
+    }
+
+    /**
+     * Increment towers placed
+     * @param {number} amount - Amount to increment
+     */
+    incrementTowersPlaced(amount = 1) {
+        this.stats.totalTowersPlaced += amount;
+        this.notifyListeners('statisticsChanged', this.stats);
+    }
+
+    /**
+     * Get all statistics
+     * @returns {Object} - statistics object
+     */
+    getStatistics(){
+        return { ...this.stats };
+    }
+
+    /**
+     * Update high score if current score is higher
+     */
+    updateHighScore(){
+        if(this.score > this.stats.highScore) {
+            this.stats.highScore = this.score;
+            this.saveHighSCore(this.score)
+        }
+    }
+    
+    /**
+     * get high score
+     * @returns {number} -high score
+     */
+    getHighScore(){
+        return this.stats.highScore;
+    }
+
+    /**
+     * save high score to local storage
+     * @param {number} score - Score to save
+     */
+    saveHighSCore(score){
+        try {
+            localStorage.setItem('towerDefenseHighScore', score.toString());
+        } catch (error) {
+            console.warn('Could no save high score to high Local storage: ', error);
+        }
+    }
+
+    /**
+     * Load high score from local storage
+     * @returns {number} -saved high score or 0
+     */
+    loadHighScore(){
+        try {
+            const saved = localStorage.getItem('towerDefenseHighScore');
+            return saved ? parseInt(saved, 10) : 0;
+        } catch (error) {
+            onsole.warn('Could no load high score from high Local storage: ', error);
+            return 0;
+        }
+    }
 
 
    // ========================
@@ -416,15 +659,48 @@ class GameState {
     });
    }
 
-   getSnapShot(){}
+
+   /**
+    * get complete state snapshot
+    * @returns {object} complete game state 
+    */
+   getSnapShot(){
+    return {
+        flags: {
+            isGameRunning: this.isGameRunning,
+            isGamePaused: this.isGamePaused,
+            isGameOver: this.isGameOver,
+            isGameWon: this.isGameWon,
+            hasError: this.hasError,
+        },
+        resources: {
+            money: this.money,
+            lives: this.lives,
+            score: this.score,
+        },
+        wave: {
+            currentWave: this.currentWave,
+            totalWaves: this.totalWaves,
+            waveStarted: this.waveStarted,
+            waveCompleted: this.waveCompleted,
+        },
+        ui: {
+            selectedTowerType: this.selectedTowerType,
+            isDraggingTower: this.isDraggingTower,
+            draggedTowerPosition: this.draggedTowerPosition,
+            hoveredGridCell: this.hoveredGridCell,
+        },
+        performance: {
+            fps: this.fps,
+            deltaTime: this.deltaTime,
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
+        },
+        stats: { ...this.stats },
+    }
+   }
 
 }
 
 export default GameState;
-
-//questioss
-// concepyt of returning a function
-//concept of functions and variables have the same name
-// why did spendmoney() return a value and decreaselives() does not
-
 
