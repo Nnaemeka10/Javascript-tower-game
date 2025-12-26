@@ -100,7 +100,7 @@ class GameState {
             this.notifyListeners('gameRunningChanged', value);
         }
     }
-    isGameRunning () {
+    getIsGameRunning () {
         return this.isGameRunning
     }
 
@@ -118,7 +118,7 @@ class GameState {
         this.notifyListeners('gamePausedChanged', value)
     }
    }
-   isGamePaused () {
+   getIsGamePaused () {
     return this.isGamePaused
    }
 
@@ -139,7 +139,7 @@ class GameState {
         this.notifyListeners('gameOverChanged', value)
     }
    }
-   isGameOver() {
+   getIsGameOver() {
     return this.isGameOver
    }
 
@@ -165,7 +165,7 @@ class GameState {
         }
     }
    }
-   isGameWon() {
+   getIsGameWon() {
     return this.isGameWon;
    } 
 
