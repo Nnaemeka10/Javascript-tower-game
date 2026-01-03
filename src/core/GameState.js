@@ -1,3 +1,10 @@
+/**
+ * GameState
+ * Central state management for the entire game.
+ * Manages all game flags, counters, and provides methods to update them.
+ * Acts as the single source of truth for game state.
+ */
+
 class GameState {
     constructor (){
 
@@ -95,12 +102,12 @@ class GameState {
      * get game running state @returns {boolean} is the game running
      */
     setGameRunning(value) {
-        if (this.isGameRunning !== value) {
+        if (this.getGameRunning() !== value) {
             this.isGameRunning = value;
             this.notifyListeners('gameRunningChanged', value);
         }
     }
-    getIsGameRunning () {
+    getGameRunning () {
         return this.isGameRunning
     }
 
@@ -113,12 +120,12 @@ class GameState {
     * get game running state @returns {boolean} is the game paused
     */
    setGamePaused (value) {
-    if(this.isGamePaused !== value) {
+    if(this.getGamePaused() !== value) {
         this.isGamePaused = value;
         this.notifyListeners('gamePausedChanged', value)
     }
    }
-   getIsGamePaused () {
+   getGamePaused () {
     return this.isGamePaused
    }
 
@@ -133,13 +140,13 @@ class GameState {
     * @returns {boolean } is the game over
     */
    setGameOver (value) {
-    if(this.isGameOver !== value) {
+    if(this.getGameOver() !== value) {
         this.isGameOver = value;
         this.isGameRunning = false; //stop game
         this.notifyListeners('gameOverChanged', value)
     }
    }
-   getIsGameOver() {
+   getGameOver() {
     return this.isGameOver
    }
 
@@ -155,7 +162,7 @@ class GameState {
     * @returns {boolean} is the game won
     */
    setGameWon (value) {
-    if (this.isGameWon !== value) {
+    if (this.getGameWon() !== value) {
         this.isGameWon = value;
         this.isGameRunning = false; //stop when game won
         this.notifyListeners('gameWonChanged', value);
@@ -165,7 +172,7 @@ class GameState {
         }
     }
    }
-   getIsGameWon() {
+   getGameWon() {
     return this.isGameWon;
    } 
 
@@ -181,7 +188,7 @@ class GameState {
     * @returns {boolean} - is there an error
     */
    setGameError(value) {
-    if(this.hasError !== value) {
+    if(this.hasGameError() !== value) {
         this.hasError = value;
         this.notifyListeners('gameErrorChanged', value);
     }
@@ -325,7 +332,7 @@ class GameState {
      * @param {number} wave - Wave number
      */
     setCurrentWave (wave){
-        if(this.currentWave !== wave){
+        if(this.getCurrentWave() !== wave){
             this.currentWave = wave;
             this.notifyListeners('waveChanged', wave);
         }
@@ -403,7 +410,7 @@ class GameState {
      * 
     */
     selectTowerType(towerType){
-        if(this.selectedTowerType !== towerType) {
+        if(this.getSelectedTowerType() !== towerType) {
             this.selectedTowerType == towerType;
             this.notifyListeners('towerTypeSelected', towerType);
         }
@@ -704,3 +711,4 @@ class GameState {
 
 export default GameState;
 
+//use getters later to enforce privacy

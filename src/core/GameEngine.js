@@ -1,4 +1,6 @@
 // Game engine refactor. Central guy to handle all systems
+import GameState from "./GameState";
+import GameLoop from "./GameLoop";
 
 class GameEngine {
     constructor (renderSurface) {
@@ -90,7 +92,7 @@ class GameEngine {
    */
 
    update(deltaTime) {
-    if (!this.gameState.isGameRunning()) return;
+    if (!this.gameState.getIsGameRunning()) return;
 
    }
 }
