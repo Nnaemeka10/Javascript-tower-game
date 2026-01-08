@@ -1,421 +1,124 @@
+/**
+ * Main Entry Point
+ * Initializes and starts the game with platform-agnostic rendering.
+ * 
+ * Architecture:
+ * Platform (DOM) → RenderSurface (adapter) → GameEngine → Game logic
+ * 
+ * This file handles:
+ * - Canvas DOM access (ONLY place where DOM is accessed for canvas)
+ * - RenderSurface creation
+ * - GameEngine initialization
+ * - Keyboard shortcuts
+ * - UI event listeners
+ */
 
-import drawGrid from "./functions/drawGrid.js";
-import drawPath from "./functions/drawPath.js";
-import {updateEnemies, drawEnemies, enemies, enemiesEscaped, resetEnemies } from "./functions/manageEnemies.js";
-import manageTower, { handleTowerShooting, deselectTower, resetTowers } from "./functions/manageTower.js";
-import drawTowers from "./functions/drawTowers.js";
-import {updateProjectiles, drawProjectiles, resetProjectiles} from "./functions/manageProjectiles.js";
-import drawUI from "./functions/drawUI.js";
-import { getTowerCost } from "./functions/manageTower.js";
+import GameEngine from "./core/GameEngine";
+import WebSurface from "./rendering/WebSurface";
+import { CANVAS_CONFIG } from './utils/constants;'
 
+//GLOBALS
+let gameEngine = null;
+let renderSurface = null;
 
-export let gameLife = 20;
-
-
-
-import { initCanvasResizer, getCtx, getCanvasDimensions, getTileSize } from "./functions/resizeCanvas.js";
-import WaveManager from "./classes/gameManagers/WaveManager.js";
-import MoneyManager from "./classes/gameManagers/MoneyManager.js";
-
-//game states
-let gamePaused = false;
-let gameRunning = false;
-let isDragging = false;
-let draggingTowerType = null;
-let mouseyX = 0;
-let mouseyY = 0;
-let animationID;
-// Initialize canvas and context
-let canvas = null
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    initialzeGame();
-});
-
-function initialzeGame() {
+//INITIALIZATION
+/**
+ * Initialize game when dom is ready
+ */
+async function initializeGame() {
     try {
-        // Initialize canvas resizer and get context
-        const ctx = initCanvasResizer({ 
-            canvasId: 'gameCanvas',
-            debounceDelay: 100,
+        console.log('Initializing tower defence game......');
+
+        //get canvas element (only dom access for canvas)
+        const canvas = document.getElementById(CANVAS_CONFIG.canvasId);
+        if(!canvas) {
+            throw new Error(`Canvas element with ID "${CANVAS_CONFIG.canvasId}" not found`);
+        }
+
+        //create render surface (platform adapter)
+        renderSurface = new WebSurface(canvas, {
+            autoResize: true,
+            useDevicePixelRatio: true,
+            enableCamera: true,
         });
 
-        if(!ctx) {
-            throw new Error('Canvas context initialization failed');
-        }
+        console.log('Render surface created');
 
-        //get canvas reference for even listners
-        canvas = document.getElementById('gameCanvas');
+        //create game engine and inject render surface
+        gameEngine = new GameEngine(renderSurface);
 
-        if(!canvas) {
-            throw new Error('Canvas element not found');
-        }
+        //initialize all systems
+        await gameEngine.initialize();
 
-        console.log('Canvas and context initialized successfully');
+        //setup event listners
+        setupKeyBoardShortcuts();
+        setupUIEventListeners();
+        setupCanvasEventListeners();
+        setupWindowEventListeners();
 
-        // set up event listners
-        setupEventListeners();
-
-        // start the render loop
-        gameLoop();
+        console.log('Game Ready to start!');
+        console.log('Press space or click start to begin')
 
     } catch (error) {
-        console.error('Failed to initialize game', error);
-
-        // Optionally, display an error message to the user
-        showErrorMessage('An error occurred while initializing the game. Please try refreshing the page.');
+        console.error(' Failed to initialize game:', error);
+        showErrorDialog('Failed to initialize game. check console for details.');
     }
 }
 
-// Game loop
-const gameLoop = () => {
-    try{
-        const ctx = getCtx()
-        const canvas = getCanvasDimensions()
-
-        //lets clear the canvas each time the game loop runs
-        ctx.clearRect(0, 0, canvas.cssWidth, canvas.cssHeight);
-
-        //Always draw static elements
-        // draw grid
-        drawGrid(ctx);
-
-        // draw path
-        drawPath(ctx);
-
-        //update game logic if game is running and not paused
-        if (gameRunning) {
-            if(!gamePaused) {
-                updateEnemies();
-                handleTowerShooting(enemies);
-                updateProjectiles();
-            }
-
-            drawEnemies(ctx);
-            drawTowers(ctx);
-            drawProjectiles(ctx);
-
-            checkGameOver();
-        };
-        
-          //always draw game ui
-         // draw text for enemies escaped
-        // draw towers
-          drawUI(ctx);
-
-        // loop on next frame
-        animationID = requestAnimationFrame(gameLoop);
-    } catch (error) {
-        console.error('Error during game loop:', error);
-
-        //try to continue or stop gracefully
-        animationID = requestAnimationFrame(gameLoop);
-    }  
-};
-
-// Setup all event Listeners
-function setupEventListeners() {
-    // Game control buttons
-    const startWave = document.getElementById('start');
-    const pause = document.getElementById('pause');
-
-    const towerDivs = [...document.getElementsByClassName('towerCard')];
-   
-
-    //start drag
-    towerDivs.forEach(towerDiv => {
-        towerDiv.addEventListener('pointerdown', startDrag);
-    });
-  
-    //end drag
-    canvas.addEventListener ('pointerup', endDrag)
+//KEYBOARD SHORTCUTS
+function setupKeyBoardShortcuts(){}
+function handleSpaceKey(){}
+function handleEscapeKey(){}
+function handlePauseKey(){}
+function handleResetKey(){}
+function handleDebugKey(){}
+function handleTowerSelectionKey(){}
 
 
-    // mouse click for tower placement
-    canvas.addEventListener('click', handleMouseClick);
-        
+//UI EVENT LISTENERS
+function setupUIEventListeners(){}
 
-    if (startWave) startWave.addEventListener('click', () => {
-        if(gameRunning) {
-            stopGame()
-        }else {
-            startGame()
-        }
-    });
+//CANVAS EVENT LISTENERS
+function setupCanvasEventListeners(){}
 
+function handleCanvasClick (){}
 
-    if (pause) pause.addEventListener('click', () => {
-        if(gameRunning) {
-            if(gamePaused) {
-                resumeGame();
-            } else {
-                pauseGame();
-            }
-        }
-    });
+function handleCanvasMouseMove(){}
+
+function handleCanvasMouseDown(){}
+
+function handleCanvasMouseUp(){}
+
+function handleCanvasMouseLeave(){}
+
+function handleCanvasDragOver(){}
+
+function handleCanvasDrop(){}
 
 
-    // Keyboard events
-    document.addEventListener('keydown', handleKeyPress);
 
-    // handle canvas resize events
-    window.addEventListener('canvasResized', handleCanvasResize);
+//WINDOWS EVENT LISTENERS
+
+function setupWindowEventListeners(){}
+
+//UTILITY FUNCTIONS
+function showErrorDialog(){}
+
+function getGameEngine(){}
+
+function getRenderSurface(){}
+
+//ENTRY POINT
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGame);
+} else {
+    initializeGame();
 }
 
-// Handle dragging to position
-function startDrag () {
-    isDragging = true;
-    draggingTowerType = 'arrow';
+//export for global access(debugging in console
+window.gameEngine = gameEngine;
+window.renderSurface = renderSurface;
+window.getGameEngine = getGameEngine;
+window.getRenderSurface = getRenderSurface;
 
-    canvas.addEventListener('pointermove', handleDrag)
-}
-
-function endDrag (e) {
-    try {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        if(isDragging) {
-
-            if(gameRunning && !gamePaused) {
-                //this will add a tower at the dragged position
-                const result = manageTower(mouseX, mouseY);
-
-                //provide feedback
-                if(!result.success) {
-                    handleTowerPlacementError(result.reason)
-                } 
-
-            }
-
-            isDragging = false;
-            draggingTowerType = null;
-            canvas.removeEventListner('pointermove', handleDrag);
-        }
-    } catch (error){
-
-    }
-}
-
-//manage drag
-function handleDrag(e) {
-    const ctx = getCtx();
-
-    const rect = canvas.getBoundingClientRect();
-    mouseyX = e.clientX - rect.left;
-    mouseyY = e.clientY - rect.top;
-
-    // //show dragging highlight // will be managed later when there are tiles and images
-    // if (isDragging && draggingTowerType) {
-    // ctx.globalAlpha = 0.6;
-    // ctx.drawImage(towerDiv, mouseyX - 20, mouseyY - 20, 40, 40);
-    // ctx.globalAlpha = 1;
-    // }
-
-    //highlight box
-    if (isDragging) {
-        console.log('hi') 
-        ctx.strokeStyle = manageTower(mouseyX, mouseyY).success ? 'green' : 'red';
-        ctx.strokeRect(
-        Math.floor(mouseyX / 40) * 40,
-        Math.floor(mouseyY / 40) * 40,
-        40, 40
-        );
-    }
-
-}
-
-// Event listener for mouse click to manage tower placement
-function handleMouseClick(e) {
-    try {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        
-        if (gameRunning && !gamePaused) {
-            // This will add a tower at the clicked position if it's not on the path and no tower exists there
-            const result = manageTower(mouseX, mouseY);
-
-            //provide  feedback
-            if(!result.success) {
-                handleTowerPlacementError(result.reason);
-            }
-        }
-
-    } catch (error) {
-        console.error('Error handling mouse click:', error);
-    }
-}
-
-//handle tower placement errors
-function handleTowerPlacementError(reason) {
-    let message = '';
-    switch(reason) {
-        case 'insufficient_funds':
-            message = `Need ${getTowerCost()} more to place tower`;
-            break;
-        case 'on_path':
-            message = 'Cannot place tower on path';
-            break;
-        case 'tower_exists':
-            message = 'Tower already exists here';
-            break;  
-        default:
-            message = 'Cannot place tower here';
-    }
-    console.log(message);
-
-    //visual feedback can be added here
-}
-
-// Handle keyboard inputs
-function handleKeyPress(e) {
-    switch (e.code) {
-        case 'Escape':
-            deselectTower();
-            break;
-        case 'Space':
-            e.preventDefault();
-            if (gameRunning) {
-                if (gamePaused) {
-                    resumeGame();
-                } else {
-                    pauseGame();
-                }
-            }
-            break;
-
-        default:
-            break;
-    }
-}
-
-//function handleCanvasResize
-function handleCanvasResize(e) {
-    console.log('Canvas resized:', e.detail);
-    // Additional handling can be done here if needed
-}
-
-//Game control functions
- const startGame = () => {
-        if (!gameRunning) {
-            gameRunning = true;
-            gamePaused = false;
-            console.log('Game Started');
-
-            //update ui
-            updateGameControlUI();
-        }
-    };
-
-const pauseGame = () => {
-    if (gameRunning && !gamePaused) {
-        gamePaused = true;
-        console.log('Game Paused');
-
-        //update UI
-        updateGameControlUI();
-    }
-};
-
-const resumeGame = () => {
-    if (gameRunning && gamePaused) {
-        gamePaused = false;
-        console.log('Game Resumed');
-
-        //update UI
-        updateGameControlUI();
-    }
-};
-
-const stopGame = () => {  
-        gameRunning = false;
-        gamePaused = false;
-        console.log('Game Stopped');
-
-        //update UI
-        updateGameControlUI();
-        resetGameState();
-};
-
-function updateGameControlUI() {
-    const playButton = document.getElementById('pause');
-    const startButton = document.getElementById('start')
-
-    if (playButton) {
-        if (gameRunning && !gamePaused) {
-            playButton.textContent = '⏸️';
-        }else {
-            playButton.textContent = '▶️';
-        }
-    }
-
-    if(startButton) {
-        if(gameRunning) {
-            startButton.textContent = 'End';
-        }else {
-            startButton.textContent = 'Start';
-        }
-    }
-}
-
-function checkGameOver() {
-    if(enemiesEscaped >= gameLife) {
-        gameover('Too many enemies escaped!');
-    }
-
-    //add other game over conditions as needed
-}
-
-//handle game over
-function gameover(reason) {
-    console.log('Game Over:', reason);
-    stopGame();
-     // Display game over message to user
-    showGameOverMessage(reason);
-    resetGameState(); 
-}
-
-function showGameOverMessage(reason) {
-    //show game over message
-    console.log('Game Over! ', reason);
-    alert(`Game Over! ${reason}`); //better ui later
-}
-
-function showErrorMessage(message) {
-    alert(message); //better ui later
-    console.error(message);
-}
-
-function resetGameState() {
-    WaveManager.reset();
-    resetEnemies();
-    resetTowers();
-    resetProjectiles();
-    MoneyManager.reset();
-    gameLife = 20;
-}
-
-
-
-
-// List of things to do:
-// 1. Add a way to end the game when lives reach 0
-// 2. Add a way to display the game over message
-// 3. ingame menu  
-// 6. add a way to upgrade towers
-// 7. add sounds
-// 8. add enemies that fight for you via confusion tower
-// 9. hammer power up that instantly kills all enemies on range
-// 10 tower for decreasing ememy speed
-// 11. wateRway for ships
-
-// rocket launcher
-// automatic gun
-
-// perspective/ tilt the playing surface
-// increment troop type per level
-// make the level 
+console.log('main.js loaded (Platform - RenderSurface - GameEngine)')

@@ -15,5 +15,8 @@ export const startingBudget = 500;
 export const COLS = 20;
 export const ROWS = 15;
 
+export const CANVAS_CONFIG = {
+    canvasId:  'gameCanvas',
+}
 
 
