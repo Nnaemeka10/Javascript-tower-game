@@ -4,7 +4,8 @@
  * Handles spawning, updating, removal, and queries.
  */
 
-import Enemy from "./Enemy";
+import Enemy from "./Enemy.js";
+import { getEnemyConfig } from "./enemyConfig.js";
 
 class EnemyManager {
     constructor() {
