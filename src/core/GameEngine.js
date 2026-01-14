@@ -31,7 +31,7 @@ import PathRenderer from '../maps/pathRenderer.js';
 import UIRenderer from '../features/ui/uiRenderer.js';
 
 // Import utilities
-import { setupEventListeners } from '../features/ui/eventHandlers.js';
+import { setupEventHandlers } from '../features/ui/eventHandlers.js';
 import { GAME_CONFIG, CANVAS_CONFIG } from '../utils/constants.js';
 
 class GameEngine {
@@ -105,7 +105,7 @@ class GameEngine {
       await this.renderers.ui.initialize();
 
       // Setup event listeners (from UI layer)
-      setupEventListeners(this);
+      setupEventHandlers(this);
 
       // Subscribe to state changes for external updates
       this.subscribeToStateChanges();
@@ -187,7 +187,7 @@ class GameEngine {
    * Toggle pause state
    */
   togglePause() {
-    const isPaused = this.gameState.isGamePaused();
+    const isPaused = this.gameState.getGamePaused();
     this.gameState.setGamePaused(!isPaused);
   }
 
@@ -197,10 +197,10 @@ class GameEngine {
    */
   update(deltaTime) {
     // Don't update if game is not running
-    if (!this.gameState.isGameRunning()) return;
+    if (!this.gameState.getGameRunning()) return;
 
     // Don't update logic if paused (but keep rendering)
-    if (this.gameState.isGamePaused()) return;
+    if (this.gameState.getGamePaused()) return;
 
     try {
       // Update game state performance metrics
@@ -375,7 +375,7 @@ class GameEngine {
     const enemies = this.managers.enemy.getEnemies();
 
     // Check lose condition
-    if (lives <= 0 && !this.gameState.isGameOver()) {
+    if (lives <= 0 && !this.gameState.getGameOver()) {
       this.endGame(false, 'No lives remaining');
       return;
     }

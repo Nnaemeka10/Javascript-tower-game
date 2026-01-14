@@ -17,6 +17,7 @@ import GameEngine from './core/GameEngine.js';
 import WebSurface from './rendering/WebSurface.js';
 import { CANVAS_CONFIG } from './utils/constants.js';
 
+
 // ============================================
 // GLOBALS
 // ============================================
@@ -144,12 +145,12 @@ function handleSpaceKey() {
     gameEngine.start();
   }
   // If game is not running, start it
-  else if (!gameState.isGameRunning()) {
+  else if (!gameState.getGameRunning()) {
     console.log('▶️ Starting game...');
     gameEngine.start();
   }
   // If game is running and paused, resume
-  else if (gameState.isGamePaused()) {
+  else if (gameState.getGamePaused()) {
     console.log('▶️ Resuming game...');
     gameEngine.togglePause();
   }

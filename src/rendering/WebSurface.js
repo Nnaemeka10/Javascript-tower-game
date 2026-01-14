@@ -13,7 +13,7 @@
  * - Efficient canvas state management
  */
 
-import RenderSurface from "./RenderSurface";
+import RenderSurface from "./RenderSurface.js";
 
 class WebSurface extends RenderSurface {
     /**

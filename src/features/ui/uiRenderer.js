@@ -73,7 +73,7 @@ class UIRenderer {
     }
 
     // Draw game over overlay
-    if (gameState.isGameOver()) {
+    if (gameState.ver()) {
       this.renderGameOver(gameState);
     }
 
