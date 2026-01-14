@@ -13,7 +13,7 @@
  * Platform-agnostic: uses only RenderSurface methods.
  */
 
-import { GAME_CONFIG } from '../utils/constants.js';
+import { GAME_CONFIG } from '../../utils/constants.js';
 
 class EnemyRenderer {
   /**
