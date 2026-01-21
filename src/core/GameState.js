@@ -323,6 +323,24 @@ class GameState {
         return this.score;
     }
 
+    /**
+     * Increment enemies killed counter
+     * @param {number} count - Number to add
+     */
+    incrementEnemiesKilled(count) {
+        this.stats.totalEnemiesKilled += count;
+        this.notifyListeners('enemiesKilledChanged', this.stats.totalEnemiesKilled);
+    }
+
+    /**
+     * Increment towers placed counter
+     * @param {number} count - Number to add
+     */
+    incrementTowersPlaced(count) {
+        this.stats.totalTowersPlaced += count;
+        this.notifyListeners('towersPlacedChanged', this.stats.totalTowersPlaced);
+    }
+
     // ========================
     // WAVE MANAGEMENT METHODS
     // ========================
@@ -671,7 +689,7 @@ class GameState {
     * get complete state snapshot
     * @returns {object} complete game state 
     */
-   getSnapShot(){
+   getSnapshot(){
     return {
         flags: {
             isGameRunning: this.isGameRunning,

@@ -21,6 +21,7 @@ import ProjectileManager from '../features/projectiles/projectileManager.js';
 import WaveManager from '../features/waves/WaveManager.js';
 import MoneyManager from '../features/economy/MoneyManager.js';
 import UIManager from '../features/ui/UIManager.js';
+import MapManager from '../maps/mapManager.js';
 
 // Import all renderers
 import TowerRenderer from '../features/towers/towerRenderer.js';
@@ -33,6 +34,7 @@ import UIRenderer from '../features/ui/uiRenderer.js';
 // Import utilities
 import { setupEventHandlers } from '../features/ui/eventHandlers.js';
 import { GAME_CONFIG, CANVAS_CONFIG } from '../utils/constants.js';
+import { MAP_CONFIGS } from '../maps/mapConfig.js';
 
 class GameEngine {
   /**
@@ -59,6 +61,7 @@ class GameEngine {
       wave: new WaveManager(),
       money: new MoneyManager(),
       ui: new UIManager(),
+      map: new MapManager(),
     };
 
     // Initialize all renderers (each receives renderSurface)
@@ -89,12 +92,27 @@ class GameEngine {
       this.gameState.initialize();
 
       // Initialize all managers (order matters - dependencies first)
+      await this.managers.map.initialize();
       await this.managers.money.initialize();
-      await this.managers.tower.initialize(this.renderSurface);
+      await this.managers.tower.initialize(this.renderSurface, this.managers.map);
       await this.managers.enemy.initialize();
       await this.managers.projectile.initialize();
       await this.managers.wave.initialize();
       await this.managers.ui.initialize();
+
+      // Set enemy path from current map (convert grid to world coordinates)
+      const currentMap = this.managers.map.getCurrentMap();
+      const tileSize = currentMap.tileSize;
+      const worldPath = currentMap.path.map(point => ({
+        x: point.x * tileSize + tileSize / 2,
+        y: point.y * tileSize + tileSize / 2,
+      }));
+      const worldSpawn = {
+        x: currentMap.spawn.x * tileSize + tileSize / 2,
+        y: currentMap.spawn.y * tileSize + tileSize / 2,
+      };
+      this.managers.enemy.setPath(worldPath);
+      this.managers.enemy.setSpawnPoint(worldSpawn);
 
       // Initialize all renderers
       await this.renderers.grid.initialize();
@@ -171,6 +189,10 @@ class GameEngine {
 
     this.gameState.setGameRunning(true);
     this.gameLoop.start();
+    
+    // Start the first wave
+    this.managers.wave.startWave(this.managers.enemy, this.gameState);
+    
     console.log('🎮 Game started');
   }
 
@@ -209,13 +231,13 @@ class GameEngine {
 
       // Update systems in dependency order
       // 1. Wave manager (spawns enemies)
-      this.managers.wave.update(deltaTime);
+      this.managers.wave.update(deltaTime, this.managers.enemy, this.gameState);
 
       // 2. Enemy manager (moves enemies)
       this.managers.enemy.update(deltaTime);
 
       // 3. Tower manager (finds targets)
-      this.managers.tower.update(deltaTime);
+      this.managers.tower.update(deltaTime, this.managers.enemy.getEnemies(), this.managers.projectile);
 
       // 4. Projectile manager (moves projectiles)
       this.managers.projectile.update(deltaTime);
@@ -261,8 +283,8 @@ class GameEngine {
       }
 
       // 2. Game map background
-      this.renderers.grid.render();
-      this.renderers.path.render();
+      this.renderers.grid.render(this.managers.map.getCurrentMap());
+      this.renderers.path.render(this.managers.map.getCurrentMap());
 
       // 3. Game entities
       this.renderers.tower.render(this.managers.tower.getTowers());
@@ -273,7 +295,7 @@ class GameEngine {
       this.renderSurface.restoreCameraTransform?.();
 
       // 4. UI (above everything, not affected by camera)
-      this.renderers.ui.render(this.gameState, this.managers);
+      this.renderers.ui.render(this.gameState, this.managers, this.managers.ui);
 
       // 5. Debug info (if enabled)
       if (GAME_CONFIG.showDebugInfo) {
@@ -380,11 +402,29 @@ class GameEngine {
       return;
     }
 
+    // Check if current wave is complete (all enemies spawned AND all dead)
+    if (
+      waves.isCurrentWaveActive() &&
+      waves.allEnemiesSpawned &&
+      enemies.length === 0
+    ) {
+      // Complete the wave and get reward
+      const reward = waves.completeWave(this.gameState);
+      this.managers.money.addMoney(reward);
+      
+      // Check if there are more waves
+      if (waves.getCurrentWave() <= waves.getTotalWaves()) {
+        // Auto-start next wave after a short delay (or wait for player input)
+        console.log(`🌊 Starting wave ${waves.getCurrentWave()}...`);
+        waves.startWave(this.managers.enemy, this.gameState);
+      }
+    }
+
     // Check win condition
     if (
       waves.isAllWavesComplete() &&
       enemies.length === 0 &&
-      !this.gameState.isGameWon()
+      !this.gameState.getGameWon()
     ) {
       this.endGame(true, 'All waves completed!');
       return;

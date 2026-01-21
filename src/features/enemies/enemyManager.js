@@ -77,6 +77,8 @@ class EnemyManager {
                     type: enemyType,
                     ...config,
                     path: this.path,
+                    x: this.spawnPoint.x,
+                    y: this.spawnPoint.y,
                 });
             }
 

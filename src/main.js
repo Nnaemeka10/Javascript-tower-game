@@ -16,6 +16,7 @@
 import GameEngine from './core/GameEngine.js';
 import WebSurface from './rendering/WebSurface.js';
 import { CANVAS_CONFIG } from './utils/constants.js';
+import { handleTowerPlacement } from './features/ui/eventHandlers.js';
 
 
 // ============================================
@@ -139,7 +140,7 @@ function handleSpaceKey() {
   const gameState = gameEngine.getGameState();
 
   // If game is over or won, restart
-  if (gameState.isGameOver() || gameState.isGameWon()) {
+  if (gameState.getGameOver() || gameState.getGameWon()) {
     console.log('🔄 Restarting game...');
     gameEngine.reset();
     gameEngine.start();
@@ -168,7 +169,7 @@ function handleEscapeKey() {
   if (!gameEngine) return;
 
   const gameState = gameEngine.getGameState();
-  if (gameState.isGameRunning()) {
+  if (gameState.getGameRunning()) {
     gameEngine.togglePause();
   }
 }
@@ -180,7 +181,7 @@ function handlePauseKey() {
   if (!gameEngine) return;
 
   const gameState = gameEngine.getGameState();
-  if (gameState.isGameRunning() && !gameState.isGamePaused()) {
+  if (gameState.getGameRunning() && !gameState.getGamePaused()) {
     gameEngine.togglePause();
   }
 }
@@ -252,10 +253,10 @@ function setupUIEventListeners() {
 
       const gameState = gameEngine.getGameState();
 
-      if (gameState.isGameOver() || gameState.isGameWon()) {
+      if (gameState.getGameOver() || gameState.getGameWon()) {
         gameEngine.reset();
         gameEngine.start();
-      } else if (!gameState.isGameRunning()) {
+      } else if (!gameState.getGameRunning()) {
         gameEngine.start();
       }
     });
@@ -266,7 +267,7 @@ function setupUIEventListeners() {
     pauseButton.addEventListener('click', () => {
       if (!gameEngine) return;
 
-      if (gameEngine.getGameState().isGameRunning()) {
+      if (gameEngine.getGameState().getGameRunning()) {
         gameEngine.togglePause();
       }
     });
@@ -338,7 +339,7 @@ function setupCanvasEventListeners() {
  */
 function handleCanvasClick(event) {
   const gameState = gameEngine.getGameState();
-  if (!gameState.isGameRunning() || gameState.isGamePaused()) {
+  if (!gameState.getGameRunning() || gameState.getGamePaused()) {
     return;
   }
 
@@ -350,11 +351,8 @@ function handleCanvasClick(event) {
   // Convert screen coordinates to world coordinates
   const { x: worldX, y: worldY } = renderSurface.screenToWorld(screenX, screenY);
 
-  // Delegate to tower manager or event handler
-  const towerManager = gameEngine.getManager('tower');
-  if (towerManager && towerManager.handleTowerPlacement) {
-    towerManager.handleTowerPlacement(worldX, worldY);
-  }
+  // Delegate to event handler for tower placement
+  handleTowerPlacement(worldX, worldY, gameEngine);
 }
 
 /**
@@ -379,7 +377,7 @@ function handleCanvasMouseMove(event) {
  */
 function handleCanvasMouseDown(event) {
   const gameState = gameEngine.getGameState();
-  if (!gameState.isGameRunning()) return;
+  if (!gameState.getGameRunning()) return;
 
   const rect = renderSurface.canvas.getBoundingClientRect();
   const screenX = event.clientX - rect.left;
@@ -390,7 +388,7 @@ function handleCanvasMouseDown(event) {
   // Delegate to UI manager for drag handling
   const uiManager = gameEngine.getManager('ui');
   if (uiManager && uiManager.handleDragStart) {
-    uiManager.handleDragStart(worldX, worldY);
+    uiManager.handleDragStart(worldX, worldY, gameEngine);
   }
 }
 
@@ -407,7 +405,7 @@ function handleCanvasMouseUp(event) {
   // Delegate to UI manager for drag end
   const uiManager = gameEngine.getManager('ui');
   if (uiManager && uiManager.handleDragEnd) {
-    uiManager.handleDragEnd(worldX, worldY);
+    uiManager.handleDragEnd(worldX, worldY, gameEngine);
   }
 }
 
@@ -446,12 +444,12 @@ function setupWindowEventListeners() {
 
     const gameState = gameEngine.getGameState();
     if (document.hidden) {
-      if (gameState.isGameRunning() && !gameState.isGamePaused()) {
+      if (gameState.getGameRunning() && !gameState.getGamePaused()) {
         gameEngine.togglePause();
         console.log('⏸️ Game paused (tab hidden)');
       }
     } else {
-      if (gameState.isGameRunning() && gameState.isGamePaused()) {
+      if (gameState.getGameRunning() && gameState.getGamePaused()) {
         gameEngine.togglePause();
         console.log('▶️ Game resumed (tab visible)');
       }

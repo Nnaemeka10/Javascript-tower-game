@@ -73,12 +73,12 @@ class UIRenderer {
     }
 
     // Draw game over overlay
-    if (gameState.ver()) {
+    if (gameState.getGameOver()) {
       this.renderGameOver(gameState);
     }
 
     // Draw game won overlay
-    if (gameState.isGameWon()) {
+    if (gameState.getGameWon()) {
       this.renderGameWon(gameState);
     }
   }

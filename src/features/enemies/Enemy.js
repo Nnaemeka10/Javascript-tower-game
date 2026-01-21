@@ -29,8 +29,9 @@ class Enemy {
     this.path = config.path || [];
     this.pathIndex = 0; //Current way point index
     this.distanceAlongSegment = 0; //distance travelled on current segment
-    this.x = this.path[0]?.x || 0;
-    this.y = this.path[0]?.y || 0;
+    // Use explicit x/y if provided, otherwise use first path point
+    this.x = config.x !== undefined ? config.x : (this.path[0]?.x || 0);
+    this.y = config.y !== undefined ? config.y : (this.path[0]?.y || 0);
     this.width = config.size || 20;
     this.height = config.size || 20;
 
@@ -395,6 +396,7 @@ class Enemy {
  
   /**
    * Reset enemy to initial state (for reuse/pooling)
+   * Note: x, y, path should be set before calling reset()
    */
   reset() {
     this.health = this.maxHealth;
@@ -410,7 +412,7 @@ class Enemy {
       this.statusEffects[key].duration = 0;
     });
 
-    this.updatePosition();
+    // Don't call updatePosition() - x/y should already be set by caller
     this.updateDirection();
   }
 }

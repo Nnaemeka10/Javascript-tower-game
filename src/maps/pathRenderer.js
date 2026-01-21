@@ -35,7 +35,7 @@ class PathRenderer {
       this.renderSurface.drawLine(
         a.x * tileSize + tileSize / 2, a.y * tileSize + tileSize / 2,
         b.x * tileSize + tileSize / 2, b.y * tileSize + tileSize / 2,
-        { strokeStyle: pathColor || '#00FF00', lineWidth: 4 }
+        pathColor || '#00FF00', 4
       );
     }
 
@@ -45,10 +45,8 @@ class PathRenderer {
         x * tileSize + tileSize / 2,
         y * tileSize + tileSize / 2,
         tileSize * 0.18,
-        {
-          fillStyle: idx === 0 ? '#00CCFF' : (idx === path.length - 1 ? '#FF3333' : pathColor || '#00FF00'),
-          globalAlpha: 0.9
-        }
+        idx === 0 ? '#00CCFF' : (idx === path.length - 1 ? '#FF3333' : pathColor || '#00FF00'),
+        { opacity: 0.9 }
       );
     });
 
@@ -58,7 +56,7 @@ class PathRenderer {
         spawn.x * tileSize + tileSize * 0.2,
         spawn.y * tileSize + tileSize * 0.2,
         tileSize * 0.6, tileSize * 0.6,
-        { fillStyle: '#00CCFF', globalAlpha: 0.8 }
+        '#00CCFF', { opacity: 0.8 }
       );
     }
     if (end) {
@@ -66,7 +64,7 @@ class PathRenderer {
         end.x * tileSize + tileSize * 0.2,
         end.y * tileSize + tileSize * 0.2,
         tileSize * 0.6, tileSize * 0.6,
-        { fillStyle: '#FF3333', globalAlpha: 0.8 }
+        '#FF3333', { opacity: 0.8 }
       );
     }
   }

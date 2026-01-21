@@ -35,6 +35,9 @@ class TowerManager {
     this.totalTowersPlaced = 0;
     this.totalMoneySpent = 0;
 
+    // Map reference for validation
+    this.mapManager = null;
+
     // State
     this.isInitialized = false;
   }
@@ -42,13 +45,17 @@ class TowerManager {
   /**
    * Initialize tower manager
    * @param {RenderSurface} renderSurface - For dimension queries (optional)
+   * @param {MapManager} mapManager - For tower spot validation
    */
-  async initialize(renderSurface) {
+  async initialize(renderSurface, mapManager = null) {
     console.log('🏰 TowerManager initializing...');
 
+    this.mapManager = mapManager;
+
     // Pre-pool some tower instances for performance
+    // Note: These are placeholder towers - they'll be reconfigured when used
     for (let i = 0; i < 20; i++) {
-      this.pool.push(new Tower(this.nextTowerId++, 'archer', 0, 0, 0, 0));
+      this.pool.push(new Tower(0, 'archer', 0, 0, 0, 0));
     }
 
     this.isInitialized = true;
@@ -79,6 +86,18 @@ class TowerManager {
     if (this.towerMap.has(gridKey)) {
       console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) already occupied`);
       return null;
+    }
+
+    // Check if tile is a valid tower spot (if mapManager is available)
+    if (this.mapManager) {
+      if (!this.mapManager.isTowerSpot(gridX, gridY)) {
+        console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) is not a valid tower spot`);
+        return null;
+      }
+      if (this.mapManager.isBlocked(gridX, gridY)) {
+        console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) is blocked`);
+        return null;
+      }
     }
 
     // Check if player can afford the tower
@@ -127,6 +146,7 @@ class TowerManager {
     // Try to get from pool
     if (this.pool.length > 0) {
       tower = this.pool.pop();
+      tower.id = this.nextTowerId++;
       tower.type = towerType;
       tower.config = TOWER_CONFIG[towerType];
       tower.x = x;
@@ -188,8 +208,11 @@ class TowerManager {
           projectileData.targetX,
           projectileData.targetY,
           projectileData.damage,
-          projectileData.damageType,
-          tower.id
+          {
+            damageType: projectileData.damageType,
+            target: projectileData.target,
+            sourceTowerId: tower.id,
+          }
         );
       }
     }

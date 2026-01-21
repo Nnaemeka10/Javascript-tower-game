@@ -107,7 +107,7 @@ class TowerRenderer {
       size,
       size,
       config.color,
-      2
+      { stroke: true, strokeWidth: 2 }
     );
 
     // Inner fill (slightly lighter)
@@ -116,9 +116,7 @@ class TowerRenderer {
       -size / 2 + 2,
       size - 4,
       size - 4,
-      config.color,
-      0,
-      true
+      config.color
     );
 
     // Selection highlight
@@ -129,26 +127,23 @@ class TowerRenderer {
         size + 8,
         size + 8,
         '#00FF00',
-        3
+        { stroke: true, strokeWidth: 3 }
       );
 
       // Corner indicators
       const offset = 6;
-      this.renderSurface.drawRect(-size / 2 - offset, -size / 2 - offset, 4, 4, '#00FF00', 0, true);
-      this.renderSurface.drawRect(size / 2 + offset - 4, -size / 2 - offset, 4, 4, '#00FF00', 0, true);
-      this.renderSurface.drawRect(-size / 2 - offset, size / 2 + offset - 4, 4, 4, '#00FF00', 0, true);
-      this.renderSurface.drawRect(size / 2 + offset - 4, size / 2 + offset - 4, 4, 4, '#00FF00', 0, true);
+      this.renderSurface.drawRect(-size / 2 - offset, -size / 2 - offset, 4, 4, '#00FF00');
+      this.renderSurface.drawRect(size / 2 + offset - 4, -size / 2 - offset, 4, 4, '#00FF00');
+      this.renderSurface.drawRect(-size / 2 - offset, size / 2 + offset - 4, 4, 4, '#00FF00');
+      this.renderSurface.drawRect(size / 2 + offset - 4, size / 2 + offset - 4, 4, 4, '#00FF00');
     }
 
     // Tower type emoji
     this.renderSurface.drawText(
-      0,
-      0,
       config.emoji,
-      16,
-      'center',
-      '#000000',
-      'Arial'
+      0,
+      0,
+      { font: '16px Arial', color: '#000000', align: 'center', baseline: 'middle' }
     );
   }
 
@@ -180,9 +175,7 @@ class TowerRenderer {
       size * 1.5,
       0,
       2,
-      config.secondaryColor,
-      0,
-      true
+      config.secondaryColor
     );
   }
 
@@ -199,9 +192,7 @@ class TowerRenderer {
       0,
       pulseSize,
       config.secondaryColor,
-      2,
-      false,
-      0.6
+      { stroke: true, strokeWidth: 2, opacity: 0.6 }
     );
   }
 
@@ -244,9 +235,7 @@ class TowerRenderer {
       y,
       barWidth,
       barHeight,
-      '#333333',
-      0,
-      true
+      '#333333'
     );
 
     // Health fill (color based on percentage)
@@ -262,9 +251,7 @@ class TowerRenderer {
       y,
       fillWidth,
       barHeight,
-      healthColor,
-      0,
-      true
+      healthColor
     );
 
     // Border
@@ -273,9 +260,8 @@ class TowerRenderer {
       y,
       barWidth,
       barHeight,
-      '#FFFFFF',
-      1,
-      false
+      'transparent',
+      { stroke: true, strokeColor: '#FFFFFF', strokeWidth: 1 }
     );
   }
 
@@ -291,20 +277,15 @@ class TowerRenderer {
       x,
       y,
       8,
-      config.color,
-      0,
-      true
+      config.color
     );
 
     // Level text
     this.renderSurface.drawText(
+      `L${tower.level}`,
       x,
       y,
-      `L${tower.level}`,
-      10,
-      'center',
-      '#FFFFFF',
-      'Arial Bold'
+      { font: 'bold 10px Arial', color: '#FFFFFF', align: 'center', baseline: 'middle' }
     );
   }
 
@@ -355,9 +336,7 @@ class TowerRenderer {
       tower.x,
       tower.y,
       tower.range,
-      config.color,
-      0,
-      true
+      config.color
     );
 
     // Range outline
@@ -367,8 +346,7 @@ class TowerRenderer {
       tower.y,
       tower.range,
       config.color,
-      1,
-      false
+      { stroke: true, strokeWidth: 1 }
     );
 
     this.renderSurface.restore();

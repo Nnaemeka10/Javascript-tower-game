@@ -27,42 +27,40 @@ class GridRenderer {
     const { cols, rows, tileSize, gridColor, blocked, blockedColor, towerSpots, towerSpotColor, background } = mapConfig;
 
     // Draw background
-    this.renderSurface.drawRect(0, 0, cols * tileSize, rows * tileSize, {
-      fillStyle: background || '#222244'
-    });
+    this.renderSurface.drawRect(0, 0, cols * tileSize, rows * tileSize, background || '#222244');
 
     // Draw grid lines
     for (let x = 0; x <= cols; x++) {
       this.renderSurface.drawLine(
         x * tileSize, 0,
         x * tileSize, rows * tileSize,
-        { strokeStyle: gridColor || '#444466', lineWidth: 1 }
-      );
+        gridColor || '#444466', 1
+        );
     }
     for (let y = 0; y <= rows; y++) {
       this.renderSurface.drawLine(
         0, y * tileSize,
         cols * tileSize, y * tileSize,
-        { strokeStyle: gridColor || '#444466', lineWidth: 1 }
-      );
+        gridColor || '#444466', 1
+        );
     }
 
     // Draw blocked tiles
     blocked.forEach(({ x, y }) => {
-      this.renderSurface.drawRect(
+        this.renderSurface.drawRect(
         x * tileSize, y * tileSize, tileSize, tileSize,
-        { fillStyle: blockedColor || '#FF3333', globalAlpha: 0.5 }
-      );
+        blockedColor || '#FF3333', { opacity: 0.5 }
+        );
     });
 
     // Draw tower spots
     towerSpots.forEach(({ x, y }) => {
-      this.renderSurface.drawCircle(
+        this.renderSurface.drawCircle(
         x * tileSize + tileSize / 2,
         y * tileSize + tileSize / 2,
         tileSize * 0.3,
-        { fillStyle: towerSpotColor || '#FFD700', globalAlpha: 0.7 }
-      );
+        towerSpotColor || '#FFD700', { opacity: 0.7 }
+        );
     });
   }
 }

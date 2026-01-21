@@ -14,6 +14,13 @@ class MapManager {
   }
 
   /**
+   * Initialize the map manager
+   */
+  async initialize() {
+    // Placeholder for any async initialization if needed
+  }
+
+  /**
    * Select a map by id
    * @param {string} mapId
    */
