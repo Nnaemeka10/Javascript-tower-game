@@ -219,18 +219,46 @@ class Projectile {
   }
 
   /**
-   * Reset projectile for pooling
+   * Initialize or re-initialize the projectile for pooling
+   * @param {Object} config - Projectile configuration
    */
-  reset() {
-    this.x = 0;
-    this.y = 0;
+  init(config) {
+    this.id = config.id;
+    this.type = config.type;
+    this.image = config.image;
+    this.color = config.color || '#ff0000';
+
+    this.x = config.x || 0;
+    this.y = config.y || 0;
+    this.width = config.size || 4;
+    this.height = config.size || 4;
+
+    this.speed = config.speed || 200;
+    this.targetX = config.targetX || this.x;
+    this.targetY = config.targetY || this.y;
+    this.target = config.target || null;
+
+    this.damage = config.damage || 10;
+    this.damageType = config.damageType || 'normal';
+    this.piercing = config.piercing || false;
+
+    this.maxDistance = config.maxDistance || 1000;
+    this.lifetime = config.lifetime || 5;
+    this.trailEnabled = config.trailEnabled ?? true;
+    this.trailColor = config.trailColor;
+
+    // Reset transient state only
+    this.direction = { x: 0, y: 0 };
+    this.distanceTraveled = 0;
+    this.rotation = 0;
     this.hasHit = false;
     this.isDead = false;
-    this.distanceTraveled = 0;
     this.age = 0;
     this.opacity = 1;
     this.trail = [];
-    this.target = null;
+
+    // Initialize direction towards target
+    this.updateDirection();
   }
 }
 

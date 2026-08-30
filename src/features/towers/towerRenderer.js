@@ -34,26 +34,83 @@ class TowerRenderer {
    * Initialize renderer
    */
   async initialize() {
-    console.log('🎨 TowerRenderer initializing...');
+    console.log('TowerRenderer initializing...');
     this.isInitialized = true;
-    console.log('✅ TowerRenderer initialized');
+    console.log('TowerRenderer initialized');
   }
 
-  /**
+/**
    * Render all towers
    * @param {Array} towers - Array of towers to render
+   * @param {GameState} gameState
+   * @param {MapManager} mapManager
+   * @param {TowerManager} towerManager
    */
-  render(towers) {
+  render(towers, gameState, mapManager, towerManager) {
     if (!this.isInitialized) return;
 
     for (const tower of towers) {
       this.renderTower(tower);
 
-      // Show range if debugging
       if (this.showRange) {
         this.renderRangeIndicator(tower);
       }
     }
+
+    // Render placement preview (Ghost)
+    if (gameState && mapManager && towerManager) {
+      this.renderPlacementPreview(gameState, mapManager, towerManager);
+    }
+  }
+
+  /**
+   * Render ghost preview for tower placement
+   * @private
+   */
+  renderPlacementPreview(gameState, mapManager, towerManager) {
+    const selectedType = gameState.getSelectedTowerType();
+    const hoveredCell = gameState.getHoveredGridCell();
+    
+    if (!selectedType || !hoveredCell) return;
+
+    const config = TOWER_CONFIG[selectedType];
+    if (!config) return;
+
+    const currentMap = mapManager.getCurrentMap();
+    const tileSize = currentMap.tileSize;
+    
+    const worldX = hoveredCell.gridX * tileSize + tileSize / 2;
+    const worldY = hoveredCell.gridY * tileSize + tileSize / 2;
+
+    // Validate placement
+    const isBlocked = mapManager.isBlocked(hoveredCell.gridX, hoveredCell.gridY);
+    const isOccupied = towerManager.getTowerAt(hoveredCell.gridX, hoveredCell.gridY);
+    
+    const canPlace = !isBlocked && !isOccupied;
+    const color = canPlace ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+
+    // Draw Range Circle
+    this.renderSurface.save();
+    this.renderSurface.setAlpha(0.3);
+    this.renderSurface.drawCircle(worldX, worldY, config.range, color, { stroke: true, strokeColor: color, strokeWidth: 2 });
+    this.renderSurface.restore();
+
+    // Draw Ghost Tower
+    this.renderSurface.save();
+    this.renderSurface.setAlpha(0.7);
+    this.renderSurface.translate(worldX, worldY);
+    
+    const size = config.width;
+    this.renderSurface.drawRect(-size / 2, -size / 2, size, size, color, { stroke: true, strokeWidth: 2 });
+    
+    this.renderSurface.drawText(
+      config.emoji,
+      0,
+      0,
+      { font: '16px Arial', color: '#FFFFFF', align: 'center', baseline: 'middle' }
+    );
+    
+    this.renderSurface.restore();
   }
 
   /**
@@ -294,31 +351,29 @@ class TowerRenderer {
    * @private
    */
   drawCooldownIndicator(x, y, tower) {
-    const cooldownPercent = tower.getCooldownPercentage();
+    if (tower.shotCooldown <= 0) return;
 
-    if (cooldownPercent < 1) {
-      // Cooldown ring
-      const radius = tower.width / 2 + 4;
-      const startAngle = -Math.PI / 2;
-      const endAngle = startAngle + (cooldownPercent * 2 * Math.PI);
+    // Calculate remaining cooldown (1 = just fired, 0 = ready to fire)
+    const remainingCooldown = tower.shotCooldown / tower.config.fireRate;
+    const radius = tower.width / 2 + 4;
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + (remainingCooldown * 2 * Math.PI);
 
-      // Draw arc
-      this.renderSurface.save();
-      this.renderSurface.translate(x, y);
+    // Draw arc
+    this.renderSurface.save();
+    this.renderSurface.translate(x, y);
 
-      // Cooldown arc
-      this.drawArc(
-        0,
-        0,
-        radius,
-        startAngle,
-        endAngle,
-        '#00FFFF',
-        2
-      );
+    this.drawArc(
+      0,
+      0,
+      radius,
+      startAngle,
+      endAngle,
+      '#00FFFF',
+      2
+    );
 
-      this.renderSurface.restore();
-    }
+    this.renderSurface.restore();
   }
 
   /**

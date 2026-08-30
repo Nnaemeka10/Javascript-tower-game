@@ -52,16 +52,6 @@ class GridRenderer {
         blockedColor || '#FF3333', { opacity: 0.5 }
         );
     });
-
-    // Draw tower spots
-    towerSpots.forEach(({ x, y }) => {
-        this.renderSurface.drawCircle(
-        x * tileSize + tileSize / 2,
-        y * tileSize + tileSize / 2,
-        tileSize * 0.3,
-        towerSpotColor || '#FFD700', { opacity: 0.7 }
-        );
-    });
   }
 }
 

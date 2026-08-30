@@ -48,7 +48,7 @@ class GameLoop {
         this.fpsUpdateTime = this.lastFrameTime;
 
         console.log(' Gameloop started')
-        this.loop();
+        this.loop(performance.now());
     }
 
     /**
@@ -151,7 +151,7 @@ class GameLoop {
      * Get Average frame time in milliseconds
      * @returns {number} - Average frame time
      */
-    getAverageFraneTime(){
+    getAverageFrameTime(){
         if (this.frameTimings.length === 0) return 0;
 
         const sum = this.frameTimings.reduce((a, b) => a + b, 0);
@@ -181,7 +181,7 @@ class GameLoop {
      */
     pause() {
         this.isPaused = true;
-        console.log('⏸️ GameLoop paused');
+        console.log('⏸GameLoop paused');
     }
 
     /**
@@ -189,7 +189,7 @@ class GameLoop {
      */
     resume() {
         this.isPaused = false;
-        console.log('▶️ GameLoop resumed');
+        console.log('GameLoop resumed');
     }
 
     /**
@@ -216,7 +216,7 @@ class GameLoop {
    getPerformanceReport(){
     return {
         fps: this.fps,
-        averageFrameTime: this.getAverageFraneTime().toFixed(2),
+        averageFrameTime: this.getAverageFrameTime().toFixed(2),
         maxFrameTime: this.getMaxFrameTime().toFixed(2),
         minFrameTime: this.getMinFrameTime().toFixed(2),
         frameCount: this.frameCount,

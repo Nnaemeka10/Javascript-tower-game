@@ -105,6 +105,21 @@ const PROJECTILE_TYPES = {
     description: 'Magic projectile with tracking ability',
     homing: true, // Follows target
   },
+  Poison: {
+    name: 'Poison',
+    speed: 180,
+    damage: 10,
+    damageType: 'poison',
+    size: 6,
+    maxDistance: 800,
+    lifetime: 5,
+    piercing: false,
+    color: '#32CD32',
+    image: 'poison.png',
+    trailEnabled: true,
+    trailColor: 'rgba(50, 205, 50, 0.5)',
+    description: 'Poison projectile for Alchemist',
+  },
 };
 
 /**

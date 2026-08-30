@@ -10,9 +10,9 @@
   <main id="game-layout">
  <!-- HUD overlay -->
     <section id="game_info" class="column">
-      <p id="scores">💀: <span>0</span></p>
-      <p id="money">💰: <span>$500</span></p>
-      <p id="lives">❤️: <span>10</span></p>
+      <p id="scores">scores: <span>0</span></p>
+      <p id="money">money: <span>$500</span></p>
+      <p id="lives">lives: <span>10</span></p>
       <div id="wave">
         <span id="wave-text">Wave: 0</span>
         <div class="waveBar">
@@ -31,22 +31,19 @@
 
 
         <div id="towers_container">
-          <div class="towerCard" draggable="false">
-            <!-- <img src="assets/arrow_tower.png" alt="Arrow Tower"> -->
-            <h2>Arrow Tower</h2>
-            <p class="price">50💰</p>
+          <div class="towerCard" draggable="true" data-tower-type="archer">
+            <h2>Archer Tower</h2>
+            <p class="price">$100</p>
           </div>
 
-          <div class="towerCard" draggable="false">
-            <!-- <img src="assets/cannon_tower.png" alt="Cannon Tower"> -->
+          <div class="towerCard" draggable="true" data-tower-type="cannon">
             <h2>Cannon</h2>
-            <p class="price">100💰</p>
+            <p class="price">$200</p>
           </div>
 
-          <div class="towerCard" draggable="false">
-            <!-- <img src="assets/magic_tower.png" alt="Magic Tower"> -->
+          <div class="towerCard" draggable="true" data-tower-type="mage">
             <h2>Magic Tower</h2>
-            <p class="price">150💰</p>
+            <p class="price">$150</p>
           </div>
         </div>
 

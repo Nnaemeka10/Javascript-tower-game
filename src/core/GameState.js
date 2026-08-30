@@ -231,7 +231,7 @@ class GameState {
         return false;
     }
     if(this.money < amount){
-        console.warn( `Insufficient funds. Have: ${this.money}, Need: ${this.amount}`);
+        console.warn( `Insufficient funds. Have: ${this.money}, Need: ${amount}`);
         return false;
     }
     this.money -= amount;
@@ -307,7 +307,7 @@ class GameState {
      */
     addScore(points) {
         if (points < 0) {
-        console.warn('⚠️ Cannot add negative score');
+        console.warn('Cannot add negative score');
         return;
         }
         this.score += points;
@@ -321,15 +321,6 @@ class GameState {
      */
     getScore() {
         return this.score;
-    }
-
-    /**
-     * Increment enemies killed counter
-     * @param {number} count - Number to add
-     */
-    incrementEnemiesKilled(count) {
-        this.stats.totalEnemiesKilled += count;
-        this.notifyListeners('enemiesKilledChanged', this.stats.totalEnemiesKilled);
     }
 
     /**
@@ -429,7 +420,7 @@ class GameState {
     */
     selectTowerType(towerType){
         if(this.getSelectedTowerType() !== towerType) {
-            this.selectedTowerType == towerType;
+            this.selectedTowerType = towerType;
             this.notifyListeners('towerTypeSelected', towerType);
         }
     }
@@ -644,7 +635,7 @@ class GameState {
             const saved = localStorage.getItem('towerDefenseHighScore');
             return saved ? parseInt(saved, 10) : 0;
         } catch (error) {
-            onsole.warn('Could no load high score from high Local storage: ', error);
+            console.warn('Could no load high score from high Local storage: ', error);
             return 0;
         }
     }
@@ -678,7 +669,7 @@ class GameState {
     this.listeners.forEach(callback => {
         try {
             callback(eventType, data);
-        } catch {
+        } catch (error) {
             console.error("Error in state listner callback", error);
         }
     });

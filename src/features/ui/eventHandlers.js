@@ -14,6 +14,7 @@
  * Setup all event handlers by delegating to managers
  * @param {GameEngine} gameEngine - Game engine instance
  */
+import { CANVAS_CONFIG } from '../../utils/constants.js';
 export function setupEventHandlers(gameEngine) {
   const gameState = gameEngine.getGameState();
   const towerManager = gameEngine.getManager('tower');
@@ -27,7 +28,7 @@ export function setupEventHandlers(gameEngine) {
     gameEngine,
   };
 
-  console.log('✅ Event handlers setup complete');
+  console.log('Event handlers setup complete');
 }
 
 /**
@@ -41,19 +42,17 @@ export function handleTowerPlacement(worldX, worldY, gameEngine) {
   const towerManager = gameEngine.getManager('tower');
   const selectedType = gameState.getSelectedTowerType();
 
-  if (!selectedType) {
-    console.warn('⚠️ No tower type selected');
-    return;
-  }
+  if (!selectedType) return;
 
-  // Convert world to grid coordinates
-  const gridX = Math.floor(worldX / 40); // CANVAS_CONFIG.tileSize
-  const gridY = Math.floor(worldY / 40);
+  // Convert world to grid coordinates using config
+  const gridX = Math.floor(worldX / CANVAS_CONFIG.tileSize);
+  const gridY = Math.floor(worldY / CANVAS_CONFIG.tileSize);
 
   // Check if cell already has tower
   const existingTower = towerManager.getTowerAt(gridX, gridY);
   if (existingTower) {
-    console.warn('⚠️ Cell already occupied');
+    console.warn('Cell already occupied');
+    gameState.deselectTowerType(); // Clear placement mode on invalid action
     return;
   }
 
@@ -61,12 +60,13 @@ export function handleTowerPlacement(worldX, worldY, gameEngine) {
   const tower = towerManager.placeTower(selectedType, worldX, worldY, gameState);
 
   if (tower) {
-    console.log(`✅ Placed ${selectedType} tower at grid (${gridX}, ${gridY})`);
-    // Deselect tower type after placement
-    gameState.deselectTowerType();
+    console.log(`Placed ${selectedType} tower at grid (${gridX}, ${gridY})`);
   } else {
-    console.warn('❌ Failed to place tower');
+    console.warn('Failed to place tower (Invalid spot or insufficient funds)');
   }
+  
+  // Deselect tower type after placement (exits placement mode)
+  gameState.deselectTowerType();
 }
 
 /**
@@ -122,7 +122,7 @@ export function handleTowerSelection(worldX, worldY, gameEngine) {
  */
 export function handleTowerUpgrade(tower, gameEngine) {
   if (!tower) {
-    console.warn('⚠️ No tower selected');
+    console.warn('No tower selected');
     return false;
   }
 

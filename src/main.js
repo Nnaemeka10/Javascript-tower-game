@@ -47,7 +47,7 @@ async function initializeGame() {
     renderSurface = new WebSurface(canvas, {
       autoResize: true,
       useDevicePixelRatio: true,
-      enableCamera: true,
+      enableCamera: false,
     });
 
     console.log('✅ RenderSurface created');
@@ -88,7 +88,32 @@ function setupKeyboardShortcuts() {
       case 'Space':
         event.preventDefault();
         handleSpaceKey();
-        break;
+        break;if (tower.shotCooldown <= 0) return;
+    const cooldownPercent = tower.getCooldownPercentage();
+
+    if (cooldownPercent < 1) {
+      // Cooldown ring
+      const radius = tower.width / 2 + 4;
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + (cooldownPercent * 2 * Math.PI);
+
+      // Draw arc
+      this.renderSurface.save();
+      this.renderSurface.translate(x, y);
+
+      // Cooldown arc
+      this.drawArc(
+        0,
+        0,
+        radius,
+        startAngle,
+        endAngle,
+        '#00FFFF',
+        2
+      );
+
+      this.renderSurface.restore();
+    }
 
       case 'Escape':
         event.preventDefault();
@@ -246,13 +271,43 @@ function setupUIEventListeners() {
   const pauseButton = document.getElementById('pause');
   const resetButton = document.getElementById('reset');
 
-  // Start button
+// Setup Tower Cards (Click & Drag)
+  document.querySelectorAll('.towerCard').forEach(card => {
+    const towerType = card.dataset.towerType;
+
+    // Click to select tower for placement
+    card.addEventListener('click', () => {
+      if (!gameEngine) return;
+      const uiManager = gameEngine.getManager('ui');
+      uiManager.selectTowerType(towerType, gameEngine);
+    });
+
+    // Drag start
+    card.addEventListener('dragstart', (e) => {
+      if (!gameEngine) return;
+      e.dataTransfer.setData('text/plain', towerType);
+      e.dataTransfer.effectAllowed = 'copy';
+      
+      // Also set it in game state for the ghost preview
+      gameEngine.getGameState().selectTowerType(towerType);
+      gameEngine.getGameState().setTowerDragging(true);
+    });
+
+    // Drag end (cleanup)
+    card.addEventListener('dragend', () => {
+      if (!gameEngine) return;
+      gameEngine.getGameState().setTowerDragging(false);
+      // Don't deselect immediately if dropped on canvas, but if dropped outside, clear it
+      setTimeout(() => {
+        // Keep it selected briefly to allow click-placement fallback if drag failed
+      }, 0);
+    });
+  });
+
   if (startButton) {
     startButton.addEventListener('click', () => {
       if (!gameEngine) return;
-
       const gameState = gameEngine.getGameState();
-
       if (gameState.getGameOver() || gameState.getGameWon()) {
         gameEngine.reset();
         gameEngine.start();
@@ -262,11 +317,9 @@ function setupUIEventListeners() {
     });
   }
 
-  // Pause button
   if (pauseButton) {
     pauseButton.addEventListener('click', () => {
       if (!gameEngine) return;
-
       if (gameEngine.getGameState().getGameRunning()) {
         gameEngine.togglePause();
       }
@@ -281,57 +334,93 @@ function setupUIEventListeners() {
     });
   }
 
-  console.log('🎮 UI event listeners configured');
+  console.log('UI event listeners configured');
 }
 
 // ============================================
 // CANVAS EVENT LISTENERS
 // ============================================
-
-/**
- * Setup canvas event listeners for interaction
- */
 function setupCanvasEventListeners() {
   const canvas = renderSurface.canvas;
 
+  // Handle Click (For click-to-place mode)
   canvas.addEventListener('click', (event) => {
     if (!gameEngine) return;
-    handleCanvasClick(event);
+    const gameState = gameEngine.getGameState();
+    if (!gameState.getGameRunning() || gameState.getGamePaused()) return;
+
+    const rect = renderSurface.canvas.getBoundingClientRect();
+    const screenX = event.clientX - rect.left;
+    const screenY = event.clientY - rect.top;
+    const { x: worldX, y: worldY } = renderSurface.screenToWorld(screenX, screenY);
+
+    // If a tower type is selected, place it. Otherwise, try to select an existing tower.
+    if (gameState.getSelectedTowerType()) {
+      handleTowerPlacement(worldX, worldY, gameEngine);
+    } else {
+      gameEngine.getManager('ui').handleClick(worldX, worldY, gameEngine);
+    }
   });
 
+  // Handle Mouse Move (For ghost preview)
   canvas.addEventListener('mousemove', (event) => {
     if (!gameEngine) return;
-    handleCanvasMouseMove(event);
+    const rect = renderSurface.canvas.getBoundingClientRect();
+    const screenX = event.clientX - rect.left;
+    const screenY = event.clientY - rect.top;
+    const { x: worldX, y: worldY } = renderSurface.screenToWorld(screenX, screenY);
+
+    gameEngine.getGameState().setHoveredGridCell(
+      Math.floor(worldX / CANVAS_CONFIG.tileSize),
+      Math.floor(worldY / CANVAS_CONFIG.tileSize)
+    );
   });
 
-  canvas.addEventListener('mousedown', (event) => {
-    if (!gameEngine) return;
-    handleCanvasMouseDown(event);
-  });
-
-  canvas.addEventListener('mouseup', (event) => {
-    if (!gameEngine) return;
-    handleCanvasMouseUp(event);
-  });
-
-  canvas.addEventListener('mouseleave', (event) => {
-    if (!gameEngine) return;
-    handleCanvasMouseLeave(event);
-  });
-
+  // Allow Drag Over (Prevents browser from blocking the drop)
   canvas.addEventListener('dragover', (event) => {
     event.preventDefault();
     if (!gameEngine) return;
-    handleCanvasDragOver(event);
+    event.dataTransfer.dropEffect = 'copy';
+    
+    // Update hover state for ghost preview while dragging
+    const rect = renderSurface.canvas.getBoundingClientRect();
+    const screenX = event.clientX - rect.left;
+    const screenY = event.clientY - rect.top;
+    const { x: worldX, y: worldY } = renderSurface.screenToWorld(screenX, screenY);
+    
+    gameEngine.getGameState().setHoveredGridCell(
+      Math.floor(worldX / CANVAS_CONFIG.tileSize),
+      Math.floor(worldY / CANVAS_CONFIG.tileSize)
+    );
   });
 
+  // Handle Drop (Drag-and-drop placement)
   canvas.addEventListener('drop', (event) => {
     event.preventDefault();
     if (!gameEngine) return;
-    handleCanvasDrop(event);
+    
+    const towerType = event.dataTransfer.getData('text/plain');
+    if (!towerType) return;
+
+    const rect = renderSurface.canvas.getBoundingClientRect();
+    const screenX = event.clientX - rect.left;
+    const screenY = event.clientY - rect.top;
+    const { x: worldX, y: worldY } = renderSurface.screenToWorld(screenX, screenY);
+
+    // Ensure state knows what we are placing
+    gameEngine.getGameState().selectTowerType(towerType);
+    handleTowerPlacement(worldX, worldY, gameEngine);
+    
+    // Clean up drag state
+    gameEngine.getGameState().setTowerDragging(false);
   });
 
-  console.log('🖱️ Canvas event listeners configured');
+  canvas.addEventListener('mouseleave', () => {
+    if (!gameEngine) return;
+    gameEngine.getGameState().clearHoveredGridCell();
+  });
+
+  console.log('Canvas event listeners configured');
 }
 
 /**

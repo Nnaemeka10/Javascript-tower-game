@@ -287,7 +287,12 @@ class GameEngine {
       this.renderers.path.render(this.managers.map.getCurrentMap());
 
       // 3. Game entities
-      this.renderers.tower.render(this.managers.tower.getTowers());
+      this.renderers.tower.render(
+        this.managers.tower.getTowers(),
+        this.gameState,
+        this.managers.map,
+        this.managers.tower
+      );
       this.renderers.enemy.render(this.managers.enemy.getEnemies());
       this.renderers.projectile.render(this.managers.projectile.getProjectiles());
 
@@ -326,15 +331,33 @@ class GameEngine {
       for (const enemy of enemies) {
         if (enemy.isDead) continue; // Dead enemies don't collide
 
-        // Simple AABB collision detection
-        if (this.checkCollision(projectile, enemy)) {
-          // Apply damage
+        let hit = false;
+
+        // 1. Homing Target Check (Prevents tunneling)
+        if (projectile.target && projectile.target.id === enemy.id) {
+          const dx = (enemy.x + enemy.width / 2) - (projectile.x + projectile.width / 2);
+          const dy = (enemy.y + enemy.height / 2) - (projectile.y + projectile.height / 2);
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // If close enough to target center, force hit
+          if (distance < enemy.width / 2) {
+            hit = true;
+          }
+        }
+
+        // 2. Fallback to standard AABB collision
+        if (!hit && this.checkCollision(projectile, enemy)) {
+          hit = true;
+        }
+
+        // Apply damage if hit
+        if (hit) {
           const damage = projectile.damage;
           const damageType = projectile.damageType || 'normal';
           enemy.takeDamage(damage, damageType);
 
-          // Mark projectile as hit
           projectile.hit();
+
 
           // Award money if enemy died
           if (enemy.isDead) {
@@ -413,9 +436,9 @@ class GameEngine {
       this.managers.money.addMoney(reward);
       
       // Check if there are more waves
-      if (waves.getCurrentWave() <= waves.getTotalWaves()) {
+      if (waves.getCurrentWave() < waves.getTotalWaves()) {
         // Auto-start next wave after a short delay (or wait for player input)
-        console.log(`🌊 Starting wave ${waves.getCurrentWave()}...`);
+        console.log(`Starting wave ${waves.getCurrentWave()}...`);
         waves.startWave(this.managers.enemy, this.gameState);
       }
     }

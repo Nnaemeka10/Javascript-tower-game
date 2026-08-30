@@ -84,18 +84,14 @@ class TowerManager {
     // Check if grid cell is already occupied
     const gridKey = `${gridX},${gridY}`;
     if (this.towerMap.has(gridKey)) {
-      console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) already occupied`);
+      console.warn(` Grid cell (${gridX}, ${gridY}) already occupied`);
       return null;
     }
 
     // Check if tile is a valid tower spot (if mapManager is available)
     if (this.mapManager) {
-      if (!this.mapManager.isTowerSpot(gridX, gridY)) {
-        console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) is not a valid tower spot`);
-        return null;
-      }
       if (this.mapManager.isBlocked(gridX, gridY)) {
-        console.warn(`⚠️ Grid cell (${gridX}, ${gridY}) is blocked`);
+        console.warn(` Grid cell (${gridX}, ${gridY}) is blocked`);
         return null;
       }
     }
@@ -103,7 +99,7 @@ class TowerManager {
     // Check if player can afford the tower
     const cost = getTowerCost(towerType, 1);
     if (!gameState.canAfford(cost)) {
-      console.warn(`⚠️ Cannot afford ${towerType} (cost: ${cost}, money: ${gameState.getMoney()})`);
+      console.warn(` Cannot afford ${towerType} (cost: ${cost}, money: ${gameState.getMoney()})`);
       return null;
     }
 
@@ -131,7 +127,7 @@ class TowerManager {
     this.totalMoneySpent += cost;
     gameState.incrementTowersPlaced(1);
 
-    console.log(`✅ Tower placed: ${towerType} at (${gridX}, ${gridY})`);
+    console.log(` Tower placed: ${towerType} at (${gridX}, ${gridY})`);
 
     return tower;
   }
@@ -153,6 +149,12 @@ class TowerManager {
       tower.y = y;
       tower.gridX = gridX;
       tower.gridY = gridY;
+      tower.width = tower.config.width;
+      tower.height = tower.config.height;
+      tower.range = tower.config.range;
+      tower.maxHealth = tower.config.health;
+      tower.targetingStrategy = tower.config.targetingStrategy || 'closest';
+
       tower.reset();
     } else {
       // Create new if pool empty
@@ -186,7 +188,7 @@ class TowerManager {
       this.pool.push(tower);
     }
 
-    console.log(`🗑️ Tower removed: ${tower.id}`);
+    console.log(` Tower removed: ${tower.id}`);
   }
 
   /**
@@ -291,7 +293,7 @@ class TowerManager {
     // Select new tower
     if (tower) {
       tower.isSelected = true;
-      console.log(`🎯 Tower selected: ${tower.id} (${tower.type})`);
+      console.log(`Tower selected: ${tower.id} (${tower.type})`);
     }
   }
 
@@ -303,14 +305,14 @@ class TowerManager {
    */
   upgradeTower(tower, gameState) {
     if (tower.level >= tower.config.maxLevel) {
-      console.warn(`⚠️ Tower ${tower.id} is already max level`);
+      console.warn(`Tower ${tower.id} is already max level`);
       return false;
     }
 
     const cost = Math.floor(tower.config.upgradeCost * Math.pow(1.15, tower.level - 1));
 
     if (!gameState.canAfford(cost)) {
-      console.warn(`⚠️ Cannot afford upgrade (cost: ${cost}, money: ${gameState.getMoney()})`);
+      console.warn(`Cannot afford upgrade (cost: ${cost}, money: ${gameState.getMoney()})`);
       return false;
     }
 

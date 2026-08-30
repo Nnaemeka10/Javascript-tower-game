@@ -43,7 +43,7 @@ class ProjectileManager {
     try {
       // Check projectile limit
       if (this.projectiles.length >= this.config.maxProjectiles) {
-        console.warn('⚠️ Max projectiles reached');
+        console.warn('Max projectiles reached');
         return null;
       }
 
@@ -54,45 +54,35 @@ class ProjectileManager {
         return null;
       }
 
-      // Create or reuse projectile
+      // Build a unified configuration object
+      const projectileConfig = {
+        id: `projectile_${this.nextProjectileId++}`,
+        type: projectileType,
+        x: startX,
+        y: startY,
+        targetX: targetX,
+        targetY: targetY,
+        target: options.target, // Ensure target is passed
+        damage: damage || config.damage,
+        damageType: config.damageType,
+        speed: config.speed,
+        maxDistance: config.maxDistance,
+        lifetime: config.lifetime,
+        color: config.color,
+        size: config.size,
+        trailEnabled: config.trailEnabled,
+        trailColor: config.trailColor,
+        piercing: config.piercing,
+        ...options
+      };
+
       let projectile;
       if (this.config.usePooling && this.projectilePool.length > 0) {
         projectile = this.projectilePool.pop();
-        Object.assign(projectile, {
-          id: `projectile_${this.nextProjectileId++}`,
-          type: projectileType,
-          x: startX,
-          y: startY,
-          targetX: targetX,
-          targetY: targetY,
-          damage: damage || config.damage,
-          damageType: config.damageType,
-          speed: config.speed,
-          maxDistance: config.maxDistance,
-          lifetime: config.lifetime,
-          color: config.color,
-          trailEnabled: config.trailEnabled,
-          ...options,
-        });
-        projectile.reset();
+        projectile.init(projectileConfig);
       } else {
-        projectile = new Projectile({
-          id: `projectile_${this.nextProjectileId++}`,
-          type: projectileType,
-          x: startX,
-          y: startY,
-          targetX: targetX,
-          targetY: targetY,
-          damage: damage || config.damage,
-          damageType: config.damageType,
-          speed: config.speed,
-          maxDistance: config.maxDistance,
-          lifetime: config.lifetime,
-          color: config.color,
-          size: config.size,
-          trailEnabled: config.trailEnabled,
-          ...options,
-        });
+        // New projectiles also use the unified config
+        projectile = new Projectile(projectileConfig);
       }
 
       this.projectiles.push(projectile);

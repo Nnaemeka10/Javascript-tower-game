@@ -362,19 +362,16 @@ class WebSurface extends RenderSurface {
    * Accounts for camera position and zoom
    */
   screenToWorld(screenX, screenY){
-    //account for device pixel ratio
-    const dprX = screenX / this.devicePixelRatio;
-    const dprY = screenY / this.devicePixelRatio;
 
-    if(!this.camera.enabled){
-        return {x: dprX, y: dprY};
+     if(!this.camera.enabled){
+      return { x: screenX, y: screenY };
     }
 
-    //apply inverse camera transformation
-    const worldX = dprX / this.camera.zoom + this.camera.x - this.width
-    const worldY = dprY / this.camera.zoom + this.camera.y - this.height
+    // Apply inverse camera transformation
+    const worldX = (screenX - this.width / 2) / this.camera.zoom + this.camera.x;
+    const worldY = (screenY - this.height / 2) / this.camera.zoom + this.camera.y;
 
-    return{ x: worldX, y: worldY};
+    return { x: worldX, y: worldY };
   }
 
 
@@ -384,20 +381,14 @@ class WebSurface extends RenderSurface {
    */
   worldToScreen(worldX, worldY){
     if(!this.camera.enabled) {
-        return {
-            x: worldX * this.devicePixelRatio,
-            y: worldY * this.devicePixelRatio,
-        };
+      return { x: worldX, y: worldY };
     }
 
-    //apply camera tranformation
-    const screenX = ((worldX - this.camera.x) * this.camera.zoom + this.width/2) * this.devicePixelRatio;
-    const screenY = ((worldY - this.camera.y) * this.camera.zoom + this.height/2) * this.devicePixelRatio;
+    // Apply camera transformation
+    const screenX = (worldX - this.camera.x) * this.camera.zoom + this.width / 2;
+    const screenY = (worldY - this.camera.y) * this.camera.zoom + this.height / 2;
 
-    return {
-        x: screenX,
-        y: screenY
-    };
+    return { x: screenX, y: screenY };
   }
 
   /**
@@ -425,7 +416,7 @@ class WebSurface extends RenderSurface {
    * Apply camera transformation to canvas
    * Call this before rendering game objects
    */
-  applyCameraTranform(){
+  applyCameraTransform(){
     if(!this.camera.enabled) return;
 
     this.ctx.save();

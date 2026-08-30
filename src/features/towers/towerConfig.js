@@ -24,7 +24,7 @@ export const TOWER_CONFIG = {
     fireRate: 0.5, // Shots per second
     damage: 15,
     damageType: 'normal',
-    projectileType: 'arrow',
+    projectileType: 'Arrow',
     piercing: false,
     areaOfEffect: 0,
     targetingStrategy: 'closest',
@@ -46,7 +46,7 @@ export const TOWER_CONFIG = {
     fireRate: 0.75,
     damage: 25,
     damageType: 'magic',
-    projectileType: 'magicMissile',
+    projectileType: 'MagicMissile',
     piercing: false,
     areaOfEffect: 40, // AOE radius
     targetingStrategy: 'pathProgress', // Targets furthest along path
@@ -68,7 +68,7 @@ export const TOWER_CONFIG = {
     fireRate: 1.5, // Slower but harder hitting
     damage: 50,
     damageType: 'normal',
-    projectileType: 'cannonball',
+    projectileType: 'Cannonball',
     piercing: true,
     areaOfEffect: 50, // Large explosion
     targetingStrategy: 'strongest', // Targets highest health
@@ -90,7 +90,7 @@ export const TOWER_CONFIG = {
     fireRate: 0.6,
     damage: 12,
     damageType: 'ice',
-    projectileType: 'iceShard',
+    projectileType: 'IceShard',
     piercing: false,
     areaOfEffect: 30,
     targetingStrategy: 'weakest', // Targets lowest health
@@ -116,7 +116,7 @@ export const TOWER_CONFIG = {
     fireRate: 0.8,
     damage: 20,
     damageType: 'poison',
-    projectileType: 'poison',
+    projectileType: 'Poison',
     piercing: false,
     areaOfEffect: 35,
     targetingStrategy: 'pathProgress',
@@ -142,7 +142,7 @@ export const TOWER_CONFIG = {
     fireRate: 1.0,
     damage: 30,
     damageType: 'lightning',
-    projectileType: 'bolt',
+    projectileType: 'Bolt',
     piercing: true,
     areaOfEffect: 0, // Chaining instead
     targetingStrategy: 'closest',
