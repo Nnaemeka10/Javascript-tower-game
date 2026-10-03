@@ -239,7 +239,7 @@ class RenderSurface {
    * @returns {Object} {width, height} in world units
    */
   getWorldDimensions() {
-    return { width: 800, height: 600 };
+    return { width: 800, height: 680 };
   }
 
   /**

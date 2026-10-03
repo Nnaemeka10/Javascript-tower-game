@@ -55,7 +55,7 @@ class UIRenderer {
   getWorldSize() {
     return this.renderSurface.getWorldDimensions
       ? this.renderSurface.getWorldDimensions()
-      : { width: 800, height: 600 };
+      : { width: 800, height: 680 };
   }
 
   /**

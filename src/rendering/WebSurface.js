@@ -379,7 +379,7 @@ class WebSurface extends RenderSurface {
     this.ctx.imageSmoothingEnabled = this.smoothing;
     this.ctx.globalAlpha = this.globalAlpha;
 
-    this.fitViewport();
+    this.fitViewPort();
 
     console.log(`Canvas resized to ${width} x ${height}`)
   }

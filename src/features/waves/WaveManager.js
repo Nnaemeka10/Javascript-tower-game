@@ -158,17 +158,16 @@ class WaveManager {
     gameState.addMoney(reward);
     gameState.completeWave();
 
-    console.log(`🎉 Wave ${this.currentWave} completed! Earned ${reward} gold`);
+    console.log(`Wave ${this.currentWave} completed! Earned ${reward} gold`);
 
     // Move to next wave
-    if (this.currentWave < this.totalWaves) {
-      this.currentWave++;
-      return reward;
-    } else {
+    this.currentWave++;
+    
+    if (this.currentWave > this.totalWaves) {
       // All waves completed
       console.log('✨ All waves completed! You win!');
-      return reward;
     }
+    return reward;
   }
 
   /**

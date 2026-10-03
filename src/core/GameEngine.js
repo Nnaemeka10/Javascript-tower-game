@@ -43,7 +43,7 @@ class GameEngine {
    */
   constructor(renderSurface) {
     if (!renderSurface) {
-      throw new Error('❌ GameEngine requires a RenderSurface instance');
+      throw new Error(' GameEngine requires a RenderSurface instance');
     }
 
     // Platform adapter (abstract, platform-agnostic)
@@ -77,7 +77,7 @@ class GameEngine {
     // State
     this.isInitialized = false;
 
-    console.log('✅ GameEngine created (renderSurface injected)');
+    console.log('GameEngine created (renderSurface injected)');
   }
 
   /**
@@ -129,10 +129,10 @@ class GameEngine {
       this.subscribeToStateChanges();
 
       this.isInitialized = true;
-      console.log('✅ GameEngine initialized successfully');
+      console.log(' GameEngine initialized successfully');
 
     } catch (error) {
-      console.error('❌ Failed to initialize GameEngine:', error);
+      console.error(' Failed to initialize GameEngine:', error);
       this.gameState.setGameError(true);
       throw error;
     }
@@ -154,13 +154,13 @@ class GameEngine {
 
         case 'gameOverChanged':
           if (data) {
-            console.log('💀 Game Over!');
+            console.log('Game Over!');
           }
           break;
 
         case 'gameWonChanged':
           if (data) {
-            console.log('🎉 You won!');
+            console.log(' You won!');
           }
           break;
 
@@ -183,17 +183,18 @@ class GameEngine {
    */
   start() {
     if (!this.isInitialized) {
-      console.error('❌ GameEngine not initialized. Call initialize() first.');
+      console.error('GameEngine not initialized. Call initialize() first.');
       return;
     }
 
+    this.gameState.setTotalWaves(this.managers.wave.getTotalWaves());
     this.gameState.setGameRunning(true);
     this.gameLoop.start();
     
     // Start the first wave
     this.managers.wave.startWave(this.managers.enemy, this.gameState);
     
-    console.log('🎮 Game started');
+    console.log(' Game started');
   }
 
   /**
@@ -202,7 +203,7 @@ class GameEngine {
   stop() {
     this.gameState.setGameRunning(false);
     this.gameLoop.stop();
-    console.log('⏹️ Game stopped');
+    console.log('Game stopped');
   }
 
   /**
@@ -255,7 +256,7 @@ class GameEngine {
       this.managers.ui.update(deltaTime);
 
     } catch (error) {
-      console.error('❌ Error during game update:', error);
+      console.error('Error during game update:', error);
       this.gameState.setGameError(true);
       // Continue running despite error
     }
@@ -438,7 +439,7 @@ class GameEngine {
       this.managers.money.addMoney(reward);
       
       // Check if there are more waves
-      if (waves.getCurrentWave() < waves.getTotalWaves()) {
+      if (waves.getCurrentWave() <= waves.getTotalWaves()) {
         // Auto-start next wave after a short delay (or wait for player input)
         console.log(`Starting wave ${waves.getCurrentWave()}...`);
         waves.startWave(this.managers.enemy, this.gameState);
@@ -480,7 +481,7 @@ class GameEngine {
    * Reset the game to initial state
    */
   reset() {
-    console.log('🔄 Resetting game...');
+    console.log('Resetting game...');
 
     this.gameState.reset();
     this.managers.tower.clear();

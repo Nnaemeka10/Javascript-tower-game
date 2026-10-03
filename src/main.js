@@ -130,7 +130,7 @@ function setupKeyboardShortcuts() {
     }
   });
 
-  console.log('⌨️ Keyboard shortcuts configured');
+  console.log('Keyboard shortcuts configured');
 }
 
 /**
@@ -143,23 +143,23 @@ function handleSpaceKey() {
 
   // If game is over or won, restart
   if (gameState.getGameOver() || gameState.getGameWon()) {
-    console.log('🔄 Restarting game...');
+    console.log('Restarting game...');
     gameEngine.reset();
     gameEngine.start();
   }
   // If game is not running, start it
   else if (!gameState.getGameRunning()) {
-    console.log('▶️ Starting game...');
+    console.log(' Starting game...');
     gameEngine.start();
   }
   // If game is running and paused, resume
   else if (gameState.getGamePaused()) {
-    console.log('▶️ Resuming game...');
+    console.log(' Resuming game...');
     gameEngine.togglePause();
   }
   // If game is running, pause it
   else {
-    console.log('⏸️ Pausing game...');
+    console.log('Pausing game...');
     gameEngine.togglePause();
   }
 }
@@ -194,7 +194,7 @@ function handlePauseKey() {
 function handleResetKey() {
   if (!gameEngine) return;
 
-  console.log('🔄 Resetting game...');
+  console.log('Resetting game...');
   gameEngine.reset();
 }
 

@@ -17,7 +17,7 @@ export const CANVAS_CONFIG = {
   canvasId: 'gameCanvas',
   tileSize: 40,
   width: 800, // 20 tiles * 40px
-  height: 600, // 15 tiles * 40px
+  height: 680, // 15 tiles * 40px + 80px for HUD
 };
 
 // ============================================
