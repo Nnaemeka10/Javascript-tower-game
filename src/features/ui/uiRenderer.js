@@ -43,9 +43,19 @@ class UIRenderer {
    * Initialize renderer
    */
   async initialize() {
-    console.log('🎨 UIRenderer initializing...');
+    console.log('UIRenderer initializing...');
     this.isInitialized = true;
-    console.log('✅ UIRenderer initialized');
+    console.log('UIRenderer initialized');
+  }
+
+  /**
+   * Get the size of the world
+   * @returns {Object} - World dimensions
+   */
+  getWorldSize() {
+    return this.renderSurface.getWorldDimensions
+      ? this.renderSurface.getWorldDimensions()
+      : { width: 800, height: 600 };
   }
 
   /**
@@ -60,7 +70,7 @@ class UIRenderer {
     this.animationTime += 0.016; // Approximate delta time
 
     // Draw HUD
-    this.renderHUD(gameState);
+    this.renderHUD(gameState, managers);
 
     // Draw notifications
     if (uiManager) {
@@ -87,15 +97,15 @@ class UIRenderer {
    * Render HUD (heads-up display)
    * @private
    */
-  renderHUD(gameState) {
-    const dims = this.renderSurface.getDimensions();
-    const hudY = dims.height - this.hudHeight - this.hudPadding;
+  renderHUD(gameState, managers = null) {
+    const { width: W, height: H } = this.getWorldSize();
+    const hudY = H - this.hudHeight - this.hudPadding;
 
     // HUD background
     this.renderSurface.drawRect(
-      this.hudPadding,
-      hudY,
-      dims.width - this.hudPadding * 2,
+      this.hudPadding, 
+      hudY, 
+      W - this.hudPadding * 2, 
       this.hudHeight,
       this.colors.hudBackground,
       { stroke: true, strokeColor: this.colors.hudAccent, strokeWidth: 2 }
@@ -131,7 +141,7 @@ class UIRenderer {
     const waveText = `Wave ${gameState.getCurrentWave()}/${gameState.getTotalWaves()}`;
     this.renderSurface.drawText(
       waveText,
-      dims.width / 2,
+      W / 2,
       hudY + 20,
       {
         font: 'bold 18px Arial',
@@ -144,7 +154,7 @@ class UIRenderer {
     // Score display (right)
     this.renderSurface.drawText(
       `Score: ${gameState.getScore()}`,
-      dims.width - this.hudPadding - 10,
+      W - this.hudPadding - 10,
       hudY + 10,
       {
         font: 'bold 16px Arial',
@@ -157,7 +167,7 @@ class UIRenderer {
     // FPS display (right bottom)
     this.renderSurface.drawText(
       `FPS: ${gameState.getFPS()}`,
-      dims.width - this.hudPadding - 10,
+      W - this.hudPadding - 10,
       hudY + 30,
       {
         font: '12px Arial',
@@ -166,6 +176,18 @@ class UIRenderer {
         baseline: 'top',
       }
     );
+
+    // wave progress bar
+    const wave = managers && managers.wave;
+    const progress = wave && wave.getWaveProgress ? Math.min(1, Math.max(0, wave.getWaveProgress())) : 0;
+    const barW = 180, barH = 6;
+    const barX = W / 2 - barW / 2;
+    const barY = hudY + this.hudHeight - 12;
+    this.renderSurface.drawRect(barX, barY, barW, barH, '#222222',
+      { stroke: true, strokeColor: '#555555', strokeWidth: 1 });
+    if (progress > 0) {
+      this.renderSurface.drawRect(barX, barY, barW * progress, barH, '#ffcc00');
+    }
   }
 
   /**
@@ -175,7 +197,7 @@ class UIRenderer {
   renderTowerPanel(towerInfo) {
     if (!towerInfo) return;
 
-    const dims = this.renderSurface.getDimensions();
+    const dims = this.getWorldSize();
     const panelX = this.hudPadding;
     const panelY = this.hudPadding;
 
@@ -338,7 +360,7 @@ class UIRenderer {
    * @private
    */
   renderNotifications(notifications) {
-    const dims = this.renderSurface.getDimensions();
+    const dims = this.getWorldSize();
     let y = this.hudPadding + 100;
 
     for (const notification of notifications) {
@@ -398,7 +420,7 @@ class UIRenderer {
    * @private
    */
   renderGameOver(gameState) {
-    const dims = this.renderSurface.getDimensions();
+    const dims = this.getWorldSize();
 
     // Semi-transparent overlay
     this.renderSurface.save();
@@ -461,7 +483,7 @@ class UIRenderer {
    * @private
    */
   renderGameWon(gameState) {
-    const dims = this.renderSurface.getDimensions();
+    const dims = this.getWorldSize();
 
     // Semi-transparent overlay
     this.renderSurface.save();

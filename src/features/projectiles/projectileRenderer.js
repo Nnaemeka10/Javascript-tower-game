@@ -29,14 +29,14 @@ class ProjectileRenderer {
       trailOpacityFactor: 0.3,
     };
 
-    console.log('✅ ProjectileRenderer created');
+    console.log('ProjectileRenderer created');
   }
 
   /**
    * Initialize renderer
    */
   async initialize() {
-    console.log('✅ ProjectileRenderer initialized');
+    console.log('ProjectileRenderer initialized');
   }
 
   /**
@@ -58,13 +58,14 @@ class ProjectileRenderer {
    * Check if projectile is visible on screen
    * @private
    */
-  isProjectileVisible(projectile) {
-    const padding = 50;
-    return this.surface.isRectInBounds(
-      projectile.x - padding,
-      projectile.y - padding,
-      projectile.width + padding * 2,
-      projectile.height + padding * 2
+   isProjectileVisible(projectile) {
+    const { width: W, height: H } = this.surface.getWorldDimensions();
+    const pad = 50;
+    return !(
+      projectile.x - pad > W ||
+      projectile.y - pad > H ||
+      projectile.x + projectile.width + pad < 0 ||
+      projectile.y + projectile.height + pad < 0
     );
   }
 

@@ -35,22 +35,24 @@ let renderSurface = null;
  */
 async function initializeGame() {
   try {
-    console.log('🚀 Initializing Tower Defense Game...');
+    console.log('Initializing Tower Defense Game...');
 
     // Get canvas element (ONLY DOM access for canvas)
     const canvas = document.getElementById(CANVAS_CONFIG.canvasId);
     if (!canvas) {
-      throw new Error(`❌ Canvas element with ID "${CANVAS_CONFIG.canvasId}" not found`);
+      throw new Error(` Canvas element with ID "${CANVAS_CONFIG.canvasId}" not found`);
     }
 
     // Create RenderSurface (platform adapter)
     renderSurface = new WebSurface(canvas, {
       autoResize: true,
       useDevicePixelRatio: true,
-      enableCamera: false,
+      enableCamera: true,                  // camera = virtual viewport (letterbox scaler)
+      worldWidth: CANVAS_CONFIG.width,     // 800 (20 tiles × 40)
+      worldHeight: CANVAS_CONFIG.height,   // 600 (15 tiles × 40)
     });
 
-    console.log('✅ RenderSurface created');
+    console.log('RenderSurface created');
 
     // Create GameEngine and inject RenderSurface
     gameEngine = new GameEngine(renderSurface);
@@ -64,11 +66,11 @@ async function initializeGame() {
     setupCanvasEventListeners();
     setupWindowEventListeners();
 
-    console.log('✅ Game ready to start!');
-    console.log('💡 Press SPACE or click START to begin');
+    console.log('Game ready to start!');
+    console.log('Press SPACE or click START to begin');
 
   } catch (error) {
-    console.error('❌ Failed to initialize game:', error);
+    console.error('Failed to initialize game:', error);
     showErrorDialog('Failed to initialize game. Check console for details.');
   }
 }
@@ -88,32 +90,7 @@ function setupKeyboardShortcuts() {
       case 'Space':
         event.preventDefault();
         handleSpaceKey();
-        break;if (tower.shotCooldown <= 0) return;
-    const cooldownPercent = tower.getCooldownPercentage();
-
-    if (cooldownPercent < 1) {
-      // Cooldown ring
-      const radius = tower.width / 2 + 4;
-      const startAngle = -Math.PI / 2;
-      const endAngle = startAngle + (cooldownPercent * 2 * Math.PI);
-
-      // Draw arc
-      this.renderSurface.save();
-      this.renderSurface.translate(x, y);
-
-      // Cooldown arc
-      this.drawArc(
-        0,
-        0,
-        radius,
-        startAngle,
-        endAngle,
-        '#00FFFF',
-        2
-      );
-
-      this.renderSurface.restore();
-    }
+        break;
 
       case 'Escape':
         event.preventDefault();

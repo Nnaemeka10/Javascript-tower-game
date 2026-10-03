@@ -40,10 +40,12 @@ class WebSurface extends RenderSurface {
         }
 
         //configuration
-        this.options  = {
+        this.options = {
             autoResize: options.autoResize ?? true,
             useDevicePixelRatio: options.useDevicePixelRatio ?? true,
             enableCamera: options.enableCamera ?? true,
+            worldWidth: options.worldWidth ?? 800,
+            worldHeight: options.worldHeight ?? 600,
             ...options,
         };
 
@@ -77,9 +79,14 @@ class WebSurface extends RenderSurface {
         //initialize canvas
         this.initializeCanvas();
 
-        //setup resize listner
+        //setup resize listener (observes the canvas box itself)
         if (this.options.autoResize) {
-            window.addEventListener('resize', () => this.handleWindowResize());
+            if (typeof ResizeObserver !== 'undefined') {
+                this._resizeObserver = new ResizeObserver(() => this.handleWindowResize());
+                this._resizeObserver.observe(this.canvas);
+            } else {
+                window.addEventListener('resize', () => this.handleWindowResize());
+            }
         }
 
         console.log( `Web surface initialized (DPR: ${this.devicePixelRatio}x)`);
@@ -107,6 +114,25 @@ class WebSurface extends RenderSurface {
     //set default context properties
     this.ctx.imageSmoothingEnabled = this.smoothing;
     this.ctx.globalAlpha = this.globalAlpha;
+    this.fitViewPort();
+  }
+
+  /**
+   * Fit the logical world (worldWidth × worldHeight) into the canvas.
+   * Letterboxed + centered. The camera doubles as the viewport scaler.
+   */
+  fitViewPort() {
+    if (!this.camera.enabled) return;
+    if (this.width <= 0 || this.height <= 0) return;
+
+    const scale = Math.min(
+      this.width / this.options.worldWidth,
+      this.height / this.options.worldHeight
+    );
+
+    this.camera.zoom = scale;
+    this.camera.x = this.options.worldWidth / 2;   // camera looks at world center
+    this.camera.y = this.options.worldHeight / 2;
   }
 
   /**
@@ -332,6 +358,10 @@ class WebSurface extends RenderSurface {
     };
   }
 
+  getWorldDimensions() {
+    return { width: this.options.worldWidth, height: this.options.worldHeight };
+  }
+
   resize(width, height){
     this.width = width;
     this.height = height;
@@ -349,6 +379,8 @@ class WebSurface extends RenderSurface {
     this.ctx.imageSmoothingEnabled = this.smoothing;
     this.ctx.globalAlpha = this.globalAlpha;
 
+    this.fitViewport();
+
     console.log(`Canvas resized to ${width} x ${height}`)
   }
 
@@ -361,35 +393,27 @@ class WebSurface extends RenderSurface {
    * Convert screen coordinates to world coordinates
    * Accounts for camera position and zoom
    */
-  screenToWorld(screenX, screenY){
-
-     if(!this.camera.enabled){
-      return { x: screenX, y: screenY };
-    }
-
-    // Apply inverse camera transformation
+  screenToWorld(screenX, screenY) {
+    if (!this.camera.enabled) return { x: screenX, y: screenY };
     const worldX = (screenX - this.width / 2) / this.camera.zoom + this.camera.x;
     const worldY = (screenY - this.height / 2) / this.camera.zoom + this.camera.y;
-
     return { x: worldX, y: worldY };
   }
-
 
   /**
    * Convert world coordinates to screen coordinates
    * Accounts for camera position and zoom
    */
-  worldToScreen(worldX, worldY){
-    if(!this.camera.enabled) {
-      return { x: worldX, y: worldY };
-    }
-
-    // Apply camera transformation
+  worldToScreen(worldX, worldY) {
+    if (!this.camera.enabled) return { x: worldX, y: worldY };
     const screenX = (worldX - this.camera.x) * this.camera.zoom + this.width / 2;
     const screenY = (worldY - this.camera.y) * this.camera.zoom + this.height / 2;
-
     return { x: screenX, y: screenY };
   }
+
+
+
+
 
   /**
    * Set camera position and zoom
@@ -416,9 +440,8 @@ class WebSurface extends RenderSurface {
    * Apply camera transformation to canvas
    * Call this before rendering game objects
    */
-  applyCameraTransform(){
-    if(!this.camera.enabled) return;
-
+    applyCameraTransform() {       
+    if (!this.camera.enabled) return;
     this.ctx.save();
     this.ctx.translate(this.width / 2, this.height / 2);
     this.ctx.scale(this.camera.zoom, this.camera.zoom);

@@ -81,6 +81,7 @@ class EnemyManager {
                     y: this.spawnPoint.y,
                 });
             }
+            enemy.isActive = true;
 
             this.enemies.push(enemy);
             return enemy;

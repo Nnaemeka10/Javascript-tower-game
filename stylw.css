@@ -30,51 +30,35 @@ body {
 /* ===================================================== */
 #game-layout {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr auto;
-  grid-auto-rows: auto;
-  grid-auto-flow: row;
-  gap: 1vh;
-  padding: 2vw;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  height: 100dvh;
+  padding: 8px;
 }
-
-
-/* ===================================================== */
-/*                  GAME INFO (TOP BAR)                  */
-/* ===================================================== */
-#game_info {
-  display: flex;
-  gap: 5vw;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 1vh 2vw;
-  font-size: 0.8rem;
-  
-}
-
-#game_info p,
-#game_info div {
-  margin: 0;
-  font-weight: bold;
-}
-
-
 
 /* ===================================================== */
 /*                        CANVAS                         */
 /* ===================================================== */
 #game-container {
-  display: flex;
-  justify-content: center;
-  order: 2;
-}
-
-canvas {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
   border: 2px solid #555;
-  background-color: #222;
-  display: block;
-  /* ⚠️ dimensions handled only by JS */
+  border-radius: 8px;
+  background: #0d0d1a; /* letterbox color */
 }
 
+#game-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none; /* border lives on the container now */
+  background: transparent;
+}
 
 /* ===================================================== */
 /*                  SIDEBAR (CONTROLS)                   */
@@ -102,7 +86,7 @@ canvas {
 .towerCard {
   min-width: fit-content;
   min-height: fit-content;
-  flex:1;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -113,7 +97,10 @@ canvas {
   border: 2px solid #333;
   border-radius: 10px;
   cursor: grab;
-  transition: transform 0.2s, background 0.2s, border 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    border 0.2s;
 }
 
 .towerCard img {
@@ -147,9 +134,9 @@ canvas {
   gap: 10%;
 }
 
-#controls button { 
+#controls button {
   width: 10vh;
-  height:5vh;
+  height: 5vh;
   padding: 0.2rem;
   border: none;
   border-radius: 6px;
@@ -166,79 +153,23 @@ canvas {
 }
 
 /* ===================================================== */
-/*                  WAVE PROGRESS BAR                    */
-/* ===================================================== */
-
- #wave {
-    position: relative;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-.waveBar {
-  flex: 1;
-  height: 8px;
-  width: 40px;
-  background: black;
-  border: 2px solid whitesmoke;
-  border-radius: 1vw;
-  overflow: hidden;
-}
-
-.waveBar .waveFill {
-  display: block;
-  height: 100%;
-  width: 0%; /* starts empty */
-  background: linear-gradient(90deg, #ffcc00, #ff6600);
-  transition: width 0.3s ease-in-out;
-}
-
-/* ===================================================== */
 /*                      RESPONSIVE                       */
 /* ===================================================== */
-@media (min-width: 768px) {
+
+@media (max-width: 767px) {
   #game-layout {
-    grid-template-columns: 1fr 40vw;
-    grid-template-rows: auto auto;
-    gap: 1vw;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
-  
-  #game_info {
-    grid-column: 2 / 3;
+  #game-container {
     grid-row: 1;
-    gap: 2vw;
-    flex-wrap: wrap;
+    grid-column: 1;
   }
 
   #user_control {
-    grid-column: 2 / 3;
     grid-row: 2;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: start;
-  }
-
-  #game-container{
-    grid-column: 1 / 2;
-    grid-row: 1 / 3;
-  }
-
-
-  #towers_container {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-  }
-
-  #wave {
-    position: relative;
-    gap: 6px;
-    align-items: flex-start;
-  }
-
-  .waveBar{
-    translate: 0px 6px;
+    grid-column: 1;
   }
 }
 
@@ -246,8 +177,3 @@ canvas {
 /*                  MEDIA QUERIES (DESKTOP)              */
 /* ===================================================== */
 /* ...existing media query styles... */
-
-
-/* ===================================================== */
-/*                  WAVE BAR (DESKTOP)                   */
-/* ===================================================== */

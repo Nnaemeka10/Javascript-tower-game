@@ -296,11 +296,13 @@ class GameEngine {
       this.renderers.enemy.render(this.managers.enemy.getEnemies());
       this.renderers.projectile.render(this.managers.projectile.getProjectiles());
 
+      // 4. UI (above everything, not affected by camera)
+      this.renderers.ui.render(this.gameState, this.managers, this.managers.ui);
+
       // Restore camera transform
       this.renderSurface.restoreCameraTransform?.();
 
-      // 4. UI (above everything, not affected by camera)
-      this.renderers.ui.render(this.gameState, this.managers, this.managers.ui);
+      
 
       // 5. Debug info (if enabled)
       if (GAME_CONFIG.showDebugInfo) {

@@ -44,6 +44,7 @@ class Enemy {
     this.health = config.health || 100;
     this.maxHealth = config.maxHealth || 100;
     this.isDead = false;
+    this.isActive = false;
     
     //stats
     this.bounty = config.bounty || 10; //money reward
@@ -64,6 +65,7 @@ class Enemy {
     //rendering
     this.rotation = 0;
     this.opacity = 1;
+
 
     //initialize path folowing
     this.updateDirection();
@@ -405,6 +407,7 @@ class Enemy {
     this.distanceAlongSegment = 0;
     this.opacity = 1;
     this.rotation = 0;
+    this.isActive = false;
 
     // Clear status effects
     Object.keys(this.statusEffects).forEach(key => {

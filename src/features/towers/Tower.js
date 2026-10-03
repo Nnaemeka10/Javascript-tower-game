@@ -87,13 +87,13 @@ class Tower {
       this.shotCooldown -= deltaTime;
     }
 
-    // Find target if none exists
-    if (!this.targetEnemy || this.targetEnemy.isDead) {
+    //Find target if none exists, OR if current target is dead/out of range
+   if (!this.targetEnemy || this.targetEnemy.isDead || !this.targetEnemy.isActive || !this.isTargetInRange(this.targetEnemy)) {
       this.targetEnemy = this.findTarget(enemies);
       this.hasShot = false;
     }
 
-    // If we have a target, rotate towards it and try to shoot
+    // If we have a valid target in range, rotate towards it and try to shoot
     if (this.targetEnemy && !this.targetEnemy.isDead) {
       // Calculate rotation angle
       const dx = this.targetEnemy.x - this.x;
@@ -110,7 +110,7 @@ class Tower {
         return this.createProjectileData();
       }
     } else {
-      // No target, reset rotation gradually
+      // No target in range, reset state
       this.hasShot = false;
     }
 
@@ -127,7 +127,7 @@ class Tower {
     if (enemies.length === 0) return null;
 
     const validTargets = enemies.filter(enemy => {
-      if (enemy.isDead) return false;
+      if (enemy.isDead || !enemy.isActive) return false;
 
       // Check if in range
       const dx = enemy.x - this.x;
@@ -153,6 +153,20 @@ class Tower {
       default:
         return validTargets[0];
     }
+  }
+
+   /**
+   * Check if a given enemy is still within the tower's range
+   * @private
+   * @param {Object} target - Enemy to check
+   * @returns {boolean} True if in range
+   */
+  isTargetInRange(target) {
+    if (!target) return false;
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance <= this.range;
   }
 
   /**
@@ -359,7 +373,7 @@ class Tower {
     this.health = this.maxHealth;
     this.range *= 1.05;
 
-    console.log(`🔥 Tower ${this.id} upgraded to level ${this.level}`);
+    console.log(`Tower ${this.id} upgraded to level ${this.level}`);
 
     return true;
   }

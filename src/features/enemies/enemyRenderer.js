@@ -98,13 +98,14 @@ class EnemyRenderer {
    * Check if enemy is visible on screen (bounds checking)
    * @private
    */
-  isEnemyVisible(enemy) {
-    const padding = 50; // Render if within 50px of screen edge
-    return this.surface.isRectInBounds(
-      enemy.x - padding,
-      enemy.y - padding,
-      enemy.width + padding * 2,
-      enemy.height + padding * 2
+   isEnemyVisible(enemy) {
+    const { width: W, height: H } = this.surface.getWorldDimensions();
+    const pad = 50;
+    return !(
+      enemy.x - pad > W ||
+      enemy.y - pad > H ||
+      enemy.x + enemy.width + pad < 0 ||
+      enemy.y + enemy.height + pad < 0
     );
   }
 

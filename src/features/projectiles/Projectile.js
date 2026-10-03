@@ -218,6 +218,19 @@ class Projectile {
     };
   }
 
+    /**
+   * Deactivate the projectile for pooling
+   * Clears transient state without needing a full config
+   */
+  deactivate() {
+    this.isDead = true;
+    this.hasHit = false;
+    this.target = null;
+    this.trail = [];
+    this.age = 0;
+    this.distanceTraveled = 0;
+  }
+
   /**
    * Initialize or re-initialize the projectile for pooling
    * @param {Object} config - Projectile configuration

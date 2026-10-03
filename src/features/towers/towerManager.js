@@ -48,7 +48,7 @@ class TowerManager {
    * @param {MapManager} mapManager - For tower spot validation
    */
   async initialize(renderSurface, mapManager = null) {
-    console.log('🏰 TowerManager initializing...');
+    console.log('TowerManager initializing...');
 
     this.mapManager = mapManager;
 
@@ -59,7 +59,7 @@ class TowerManager {
     }
 
     this.isInitialized = true;
-    console.log('✅ TowerManager initialized');
+    console.log('TowerManager initialized');
   }
 
   /**
@@ -73,7 +73,7 @@ class TowerManager {
   placeTower(towerType, x, y, gameState) {
     // Validate tower type
     if (!TOWER_CONFIG[towerType]) {
-      console.error(`❌ Invalid tower type: ${towerType}`);
+      console.error(`Invalid tower type: ${towerType}`);
       return null;
     }
 
@@ -90,10 +90,19 @@ class TowerManager {
 
     // Check if tile is a valid tower spot (if mapManager is available)
     if (this.mapManager) {
+      if (!this.mapManager.isInBounds(gridX, gridY)) {
+        console.warn(` Grid cell (${gridX}, ${gridY}) is out of bounds`);
+        return null;
+      }
       if (this.mapManager.isBlocked(gridX, gridY)) {
         console.warn(` Grid cell (${gridX}, ${gridY}) is blocked`);
         return null;
       }
+      if (this.mapManager.isOnPath(gridX, gridY)) {          
+        console.warn(` Grid cell (${gridX}, ${gridY}) is on the enemy path`);
+        return null;
+      }
+
     }
 
     // Check if player can afford the tower
@@ -128,7 +137,6 @@ class TowerManager {
     gameState.incrementTowersPlaced(1);
 
     console.log(` Tower placed: ${towerType} at (${gridX}, ${gridY})`);
-
     return tower;
   }
 
@@ -397,7 +405,7 @@ class TowerManager {
     this.towers = [];
     this.towerMap.clear();
     this.gridCells.clear();
-    console.log('🧹 All towers cleared');
+    console.log(' All towers cleared');
   }
 
   /**

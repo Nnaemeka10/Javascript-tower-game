@@ -16,7 +16,7 @@ class GridRenderer {
      * Initialize the GridRenderer
     */
   async initialize() {
-    console.log('✅ GridRenderer initialized');
+    console.log(' GridRenderer initialized');
   }
 
   /**
@@ -24,7 +24,7 @@ class GridRenderer {
    * @param {Object} mapConfig
    */
   render(mapConfig) {
-    const { cols, rows, tileSize, gridColor, blocked, blockedColor, towerSpots, towerSpotColor, background } = mapConfig;
+    const { cols, rows, tileSize, gridColor, blocked, blockedColor, background } = mapConfig;
 
     // Draw background
     this.renderSurface.drawRect(0, 0, cols * tileSize, rows * tileSize, background || '#222244');

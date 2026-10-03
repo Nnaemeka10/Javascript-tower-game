@@ -233,6 +233,14 @@ class RenderSurface {
   getDimensions() {
     throw new Error('getDimensions() must be implemented by subclass');
   }
+  /**
+   * Get logical world dimensions (virtual resolution).
+   * Renderers do bounds culling & HUD layout in world units.
+   * @returns {Object} {width, height} in world units
+   */
+  getWorldDimensions() {
+    return { width: 800, height: 600 };
+  }
 
   /**
    * Resize the surface

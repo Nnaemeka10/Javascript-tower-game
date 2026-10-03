@@ -16,7 +16,7 @@ class PathRenderer {
      * Initialize the PathRenderer
     */
   async initialize() {
-    console.log('✅ PathRenderer initialized');
+    console.log('PathRenderer initialized');
   }
 
   /**

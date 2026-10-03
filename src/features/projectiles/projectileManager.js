@@ -8,6 +8,7 @@ import Projectile from './Projectile.js';
 import { getProjectileConfig } from './projectileConfig.js';
 
 class ProjectileManager {
+  //constructor which initializes the projectile manager with an empty list of active projectiles, a pool for reusing projectiles, and configuration settings for maxpool size and projectileid. 
   constructor() {
     this.projectiles = []; // Active projectiles
     this.projectilePool = []; // Object pool for reuse
@@ -22,10 +23,10 @@ class ProjectileManager {
   }
 
   /**
-   * Initialize the projectile manager
+   * Initialize the projectile manager and log to console to show that the copde ha sgotten to here
    */
   async initialize() {
-    console.log('✅ ProjectileManager initialized');
+    console.log('ProjectileManager initialized');
   }
 
   /**
@@ -121,7 +122,7 @@ class ProjectileManager {
 
       // Return to pool if space available
       if (this.config.usePooling && this.projectilePool.length < this.maxPoolSize) {
-        projectile.reset();
+        projectile.deactivate();
         this.projectilePool.push(projectile);
       }
     }

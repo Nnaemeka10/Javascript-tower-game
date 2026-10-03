@@ -72,6 +72,8 @@ class TowerRenderer {
     const hoveredCell = gameState.getHoveredGridCell();
     
     if (!selectedType || !hoveredCell) return;
+    // Ignore hover outside the map (letterbox areas)
+    if (!mapManager.isInBounds(hoveredCell.gridX, hoveredCell.gridY)) return;
 
     const config = TOWER_CONFIG[selectedType];
     if (!config) return;
@@ -84,9 +86,10 @@ class TowerRenderer {
 
     // Validate placement
     const isBlocked = mapManager.isBlocked(hoveredCell.gridX, hoveredCell.gridY);
+    const isOnPath  = mapManager.isOnPath(hoveredCell.gridX, hoveredCell.gridY);
     const isOccupied = towerManager.getTowerAt(hoveredCell.gridX, hoveredCell.gridY);
     
-    const canPlace = !isBlocked && !isOccupied;
+    const canPlace = !isBlocked && !isOnPath && !isOccupied;
     const color = canPlace ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
 
     // Draw Range Circle
@@ -119,7 +122,13 @@ class TowerRenderer {
    */
   renderTower(tower) {
     // Skip if off-screen (bounds checking)
-    if (!this.renderSurface.isCircleInBounds(tower.x, tower.y, tower.width)) {
+    // World-bounds culling (correct under letterbox zoom)
+   const { width: W, height: H } = this.renderSurface.getWorldDimensions();
+    const pad = 40;
+    if (
+      tower.x - pad > W || tower.y - pad > H ||
+      tower.x + tower.width + pad < 0 || tower.y + tower.height + pad < 0
+    ) {
       return;
     }
 

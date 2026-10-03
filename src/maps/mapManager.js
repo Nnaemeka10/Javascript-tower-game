@@ -21,6 +21,39 @@ class MapManager {
   }
 
   /**
+   * Is a tile on the enemy path corridor? (within half a tile of any segment)
+   * @param {number} x
+   * @param {number} y
+   * @returns {boolean}
+   */
+  isOnPath(x, y) {
+    const path = this.currentMap.path;
+    if (!path || path.length < 2) return false;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      if (this._pointNearSegment(x, y, path[i], path[i + 1])) return true;
+    }
+    return false;
+  }
+
+ /**
+   * Grid-cell center within 0.5 tiles of segment a→b
+   * @private
+   */
+  _pointNearSegment(px, py, a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+
+    if (lenSq === 0) return Math.hypot(px - a.x, py - a.y) <= 0.5;
+
+    let t = ((px - a.x) * dx + (py - a.y) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+
+    return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy)) <= 0.5;
+  }
+
+  /**
    * Select a map by id
    * @param {string} mapId
    */
