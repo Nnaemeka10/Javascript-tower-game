@@ -86,7 +86,7 @@ class GameEngine {
    */
   async initialize() {
     try {
-      console.log('🎬 Initializing GameEngine...');
+      console.log('Initializing GameEngine...');
 
       // Initialize game state
       this.gameState.initialize();
@@ -311,7 +311,7 @@ class GameEngine {
       }
 
     } catch (error) {
-      console.error('❌ Error during render:', error);
+      console.error(' Error during render:', error);
       // Continue rendering next frame
     }
   }
@@ -409,7 +409,7 @@ class GameEngine {
         this.managers.enemy.removeEnemy(enemy);
 
         // Notify UI
-        console.log(`👿 Enemy escaped! Lives: ${this.gameState.getLives()}`);
+        console.log(` Enemy escaped! Lives: ${this.gameState.getLives()}`);
       }
     }
   }
@@ -464,10 +464,10 @@ class GameEngine {
   endGame(won, reason) {
     if (won) {
       this.gameState.setGameWon(true);
-      console.log(`🎉 ${reason}`);
+      console.log(`Victory ${reason}`);
     } else {
       this.gameState.setGameOver(true);
-      console.log(`💀 ${reason}`);
+      console.log(`Defeat: ${reason}`);
     }
 
     this.stop();

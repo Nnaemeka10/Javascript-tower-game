@@ -113,9 +113,9 @@ class UIRenderer {
 
     // Money display
     this.renderSurface.drawText(
-      `💰 Money: ${gameState.getMoney()}`,
+      `Money: ${gameState.getMoney()}`,
       this.hudPadding + 10,
-      hudY + 10,
+      hudY + 20,
       {
         font: 'bold 16px Arial',
         color: this.colors.hudAccent,
@@ -126,9 +126,9 @@ class UIRenderer {
 
     // Lives display
     this.renderSurface.drawText(
-      `❤️ Lives: ${gameState.getLives()}`,
+      `Lives: ${gameState.getLives()}`,
       this.hudPadding + 10,
-      hudY + 30,
+      hudY + 40,
       {
         font: 'bold 16px Arial',
         color: gameState.getLives() <= 5 ? this.colors.errorText : this.colors.hudText,
@@ -155,7 +155,7 @@ class UIRenderer {
     this.renderSurface.drawText(
       `Score: ${gameState.getScore()}`,
       W - this.hudPadding - 10,
-      hudY + 10,
+      hudY + 20,
       {
         font: 'bold 16px Arial',
         color: this.colors.hudText,
@@ -168,7 +168,7 @@ class UIRenderer {
     this.renderSurface.drawText(
       `FPS: ${gameState.getFPS()}`,
       W - this.hudPadding - 10,
-      hudY + 30,
+      hudY + 40,
       {
         font: '12px Arial',
         color: this.colors.infoText,
@@ -182,7 +182,7 @@ class UIRenderer {
     const progress = wave && wave.getWaveProgress ? Math.min(1, Math.max(0, wave.getWaveProgress())) : 0;
     const barW = 180, barH = 6;
     const barX = W / 2 - barW / 2;
-    const barY = hudY + this.hudHeight - 12;
+    const barY = hudY + this.hudHeight - 22;
     this.renderSurface.drawRect(barX, barY, barW, barH, '#222222',
       { stroke: true, strokeColor: '#555555', strokeWidth: 1 });
     if (progress > 0) {
@@ -503,7 +503,7 @@ class UIRenderer {
 
     // Victory text
     this.renderSurface.drawText(
-      '🎉 VICTORY! 🎉',
+      'VICTORY!',
       dims.width / 2,
       dims.height / 2 - 60,
       {

@@ -47,10 +47,10 @@ class UIManager {
    * Initialize UI manager
    */
   async initialize() {
-    console.log('🎨 UIManager initializing...');
+    console.log('UIManager initializing...');
 
     this.isInitialized = true;
-    console.log('✅ UIManager initialized');
+    console.log('UIManager initialized');
   }
 
   /**

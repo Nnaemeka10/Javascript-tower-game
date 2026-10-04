@@ -89,7 +89,8 @@ class TowerRenderer {
     const isOnPath  = mapManager.isOnPath(hoveredCell.gridX, hoveredCell.gridY);
     const isOccupied = towerManager.getTowerAt(hoveredCell.gridX, hoveredCell.gridY);
     
-    const canPlace = !isBlocked && !isOnPath && !isOccupied;
+    const canAfford = gameState.canAfford(config.cost);
+    const canPlace = !isBlocked && !isOnPath && !isOccupied && canAfford;
     const color = canPlace ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
 
     // Draw Range Circle

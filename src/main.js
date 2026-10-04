@@ -17,6 +17,7 @@ import GameEngine from './core/GameEngine.js';
 import WebSurface from './rendering/WebSurface.js';
 import { CANVAS_CONFIG } from './utils/constants.js';
 import { handleTowerPlacement } from './features/ui/eventHandlers.js';
+import { TOWER_CONFIG, getTowerCost } from './features/towers/towerConfig.js';
 
 
 // ============================================
@@ -49,7 +50,7 @@ async function initializeGame() {
       useDevicePixelRatio: true,
       enableCamera: true,                  // camera = virtual viewport (letterbox scaler)
       worldWidth: CANVAS_CONFIG.width,     // 800 (20 tiles × 40)
-      worldHeight: CANVAS_CONFIG.height,   // 600 (15 tiles × 40)
+      worldHeight: CANVAS_CONFIG.height,   // 600 (15 tiles × 40) + 80 for HUD
     });
 
     console.log('RenderSurface created');
@@ -61,10 +62,12 @@ async function initializeGame() {
     await gameEngine.initialize();
 
     // Setup event listeners
+    buildTowerShop()
     setupKeyboardShortcuts();
     setupUIEventListeners();
     setupCanvasEventListeners();
     setupWindowEventListeners();
+    subscribeToUiState()
 
     console.log('Game ready to start!');
     console.log('Press SPACE or click START to begin');
@@ -247,39 +250,6 @@ function setupUIEventListeners() {
   const startButton = document.getElementById('start');
   const pauseButton = document.getElementById('pause');
   const resetButton = document.getElementById('reset');
-
-// Setup Tower Cards (Click & Drag)
-  document.querySelectorAll('.towerCard').forEach(card => {
-    const towerType = card.dataset.towerType;
-
-    // Click to select tower for placement
-    card.addEventListener('click', () => {
-      if (!gameEngine) return;
-      const uiManager = gameEngine.getManager('ui');
-      uiManager.selectTowerType(towerType, gameEngine);
-    });
-
-    // Drag start
-    card.addEventListener('dragstart', (e) => {
-      if (!gameEngine) return;
-      e.dataTransfer.setData('text/plain', towerType);
-      e.dataTransfer.effectAllowed = 'copy';
-      
-      // Also set it in game state for the ghost preview
-      gameEngine.getGameState().selectTowerType(towerType);
-      gameEngine.getGameState().setTowerDragging(true);
-    });
-
-    // Drag end (cleanup)
-    card.addEventListener('dragend', () => {
-      if (!gameEngine) return;
-      gameEngine.getGameState().setTowerDragging(false);
-      // Don't deselect immediately if dropped on canvas, but if dropped outside, clear it
-      setTimeout(() => {
-        // Keep it selected briefly to allow click-placement fallback if drag failed
-      }, 0);
-    });
-  });
 
   if (startButton) {
     startButton.addEventListener('click', () => {
@@ -512,12 +482,12 @@ function setupWindowEventListeners() {
     if (document.hidden) {
       if (gameState.getGameRunning() && !gameState.getGamePaused()) {
         gameEngine.togglePause();
-        console.log('⏸️ Game paused (tab hidden)');
+        console.log('Game paused (tab hidden)');
       }
     } else {
       if (gameState.getGameRunning() && gameState.getGamePaused()) {
         gameEngine.togglePause();
-        console.log('▶️ Game resumed (tab visible)');
+        console.log('Game resumed (tab visible)');
       }
     }
   });
@@ -527,7 +497,7 @@ function setupWindowEventListeners() {
     if (!gameEngine) return;
 
     const { width, height } = renderSurface.getDimensions();
-    console.log(`📐 Canvas resized to ${width}x${height}`);
+    console.log(`Canvas resized to ${width}x${height}`);
 
     // Notify managers if needed
     const uiManager = gameEngine.getManager('ui');
@@ -536,7 +506,104 @@ function setupWindowEventListeners() {
     }
   });
 
-  console.log('🪟 Window event listeners configured');
+  console.log('Window event listeners configured');
+}
+
+// ============================================
+// TOWER SHOP (dynamic — generated from TOWER_CONFIG)
+// ============================================
+let towerShopEl = null;
+
+function buildTowerShop() {
+  towerShopEl = document.getElementById('towers_container');
+  towerShopEl.innerHTML = '';
+
+  for (const [type, config] of Object.entries(TOWER_CONFIG)) {
+    const cost = getTowerCost(type, 1);                       // single source of truth
+    const shortName = config.name.replace(/\s*Tower$/i, ''); // "Archer Tower" → "Archer"
+
+    const card = document.createElement('div');
+    card.className = 'towerCard';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `${config.name}. Cost ${cost} gold.`);
+    card.draggable = true;                     // div: HTML5 drag works everywhere (buttons don't)
+    card.dataset.towerType = type;
+    card.dataset.cost = String(cost);
+    card.style.setProperty('--tower-accent', config.color);
+
+    card.innerHTML = `
+      <span class="towerEmoji" aria-hidden="true">${config.emoji}</span>
+      <span class="towerName">${shortName}</span>
+      <span class="towerPrice">${cost}<i class="coin" aria-hidden="true"></i></span>
+    `;
+
+    const activate = () => {
+      if (!gameEngine) return;
+      gameEngine.getManager('ui').selectTowerType(type, gameEngine);  // toggle select/deselect
+      refreshTowerShop();
+    };
+
+    card.addEventListener('click', activate);
+
+    card.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        e.stopPropagation();   //  don't let Space also hit the global pause handler
+        activate();
+      }
+    });
+
+    card.addEventListener('dragstart', (e) => {
+      if (!gameEngine) return;
+      e.dataTransfer.setData('text/plain', type);
+      e.dataTransfer.effectAllowed = 'copy';
+      gameEngine.getGameState().selectTowerType(type);   // no toggle while dragging
+      gameEngine.getGameState().setTowerDragging(true);
+      refreshTowerShop();
+    });
+
+    card.addEventListener('dragend', () => {
+      if (!gameEngine) return;
+      gameEngine.getGameState().setTowerDragging(false);
+      refreshTowerShop();
+    });
+
+    towerShopEl.appendChild(card);
+  }
+
+  refreshTowerShop();
+}
+
+/**
+ * Sync card visuals with game state: selected ring + affordability.
+ * Called on click/drag AND reactively via moneyChanged.
+ */
+function refreshTowerShop() {
+  if (!gameEngine || !towerShopEl) return;
+  const gs = gameEngine.getGameState();
+  const selectedType = gs.getSelectedTowerType();
+
+  towerShopEl.querySelectorAll('.towerCard').forEach((card) => {
+    const type = card.dataset.towerType;
+    const affordable = gs.canAfford(Number(card.dataset.cost));
+    const isSelected = type === selectedType;
+
+    card.classList.toggle('selected', isSelected);
+    card.classList.toggle('unaffordable', !affordable);
+    card.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    card.setAttribute('aria-label', `${type} tower. Cost ${card.dataset.cost} gold.`
+      + (affordable ? '' : ' Insufficient gold.'));
+  });
+}
+
+function subscribeToUiState() {
+  gameEngine.getGameState().subscribe((eventType) => {
+    if (['moneyChanged', 'towerTypeSelected', 'towerTypeDeselected', 'stateReset'].includes(eventType)) {
+      refreshTowerShop();
+    }
+  });
 }
 
 // ============================================
@@ -604,4 +671,4 @@ window.renderSurface = renderSurface;
 window.getGameEngine = getGameEngine;
 window.getRenderSurface = getRenderSurface;
 
-console.log('📄 main.js loaded (Platform → RenderSurface → GameEngine)');
+console.log('main.js loaded (Platform → RenderSurface → GameEngine)');

@@ -2,47 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d0d1a">
+    <meta name="description" content="Endless Tower Defence — a platform-agnostic tower defense game.">
     <title>Endless Tower Defence</title>
     <link rel="stylesheet" href="stylw.css">
 </head>
 <body>
   <main id="game-layout">
-    <!-- Game container (responsive flex) -->
-    <section id="game-container">
-      <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <section id="game-container" aria-label="Game area">
+      <canvas id="gameCanvas" width="800" height="680"></canvas>
     </section>
 
-      <!-- Sidebar (desktop) or bottom bar (mobile) -->
-    <section id="user_control" class="column"> 
+    <aside id="user_control" aria-label="Game controls">
+      <span class="shopLabel" id="shopLabel">Towers</span>
 
+      <!-- Cards injected by buildTowerShop() from TOWER_CONFIG -->
+      <nav id="towers_container" class="towerShop" aria-labelledby="shopLabel"></nav>
 
-        <div id="towers_container">
-          <div class="towerCard" draggable="true" data-tower-type="archer">
-            <h2>Archer Tower</h2>
-            <p class="price">$100</p>
-          </div>
-
-          <div class="towerCard" draggable="true" data-tower-type="cannon">
-            <h2>Cannon</h2>
-            <p class="price">$200</p>
-          </div>
-
-          <div class="towerCard" draggable="true" data-tower-type="mage">
-            <h2>Magic Tower</h2>
-            <p class="price">$150</p>
-          </div>
-        </div>
-
-        
-        <div id="controls">
-          <button id="start">Start</button>
-          <button id="pause">⏸ </button>
-        </div>
-    </section>
+      <div id="controls">
+        <button id="start" type="button" class="btn primary">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5-9-5.5z" fill="currentColor"/></svg>
+          <span>Start</span>
+        </button>
+        <button id="pause" type="button" class="btn ghost" aria-label="Pause game">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </aside>
 
   </main>
 
-    <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

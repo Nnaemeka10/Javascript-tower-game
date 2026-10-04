@@ -109,7 +109,7 @@ export function handleTowerSelection(worldX, worldY, gameEngine) {
   }
 
   towerManager.selectTower(closestTower);
-  console.log(`🎯 Tower selected: ${closestTower.type} at level ${closestTower.level}`);
+  console.log(`Tower selected: ${closestTower.type} at level ${closestTower.level}`);
 
   return closestTower;
 }
@@ -132,7 +132,7 @@ export function handleTowerUpgrade(tower, gameEngine) {
   const success = towerManager.upgradeTower(tower, gameState);
 
   if (success) {
-    console.log(`🔥 Tower upgraded to level ${tower.level}`);
+    console.log(`Tower upgraded to level ${tower.level}`);
   }
 
   return success;
@@ -146,7 +146,7 @@ export function handleTowerUpgrade(tower, gameEngine) {
  */
 export function handleTowerRepair(tower, gameEngine) {
   if (!tower) {
-    console.warn('⚠️ No tower selected');
+    console.warn('No tower selected');
     return false;
   }
 
@@ -157,7 +157,7 @@ export function handleTowerRepair(tower, gameEngine) {
   const success = towerManager.repairTower(tower, repairAmount, gameState);
 
   if (success) {
-    console.log(`🔧 Tower repaired (${repairAmount} health restored)`);
+    console.log(`Tower repaired (${repairAmount} health restored)`);
   }
 
   return success;
@@ -170,7 +170,7 @@ export function handleTowerRepair(tower, gameEngine) {
  */
 export function handleTowerSell(tower, gameEngine) {
   if (!tower) {
-    console.warn('⚠️ No tower selected');
+    console.warn(' No tower selected');
     return;
   }
 
@@ -185,7 +185,7 @@ export function handleTowerSell(tower, gameEngine) {
   gameState.addMoney(sellPrice);
   towerManager.removeTower(tower);
 
-  console.log(`💰 Tower sold for ${sellPrice} gold`);
+  console.log(`Tower sold for ${sellPrice} gold`);
 }
 
 /**
@@ -200,11 +200,11 @@ export function handleTowerTypeSelection(towerType, gameEngine) {
   if (currentType === towerType) {
     // Deselect if clicking same type
     gameState.deselectTowerType();
-    console.log('❌ Tower selection cleared');
+    console.log('Tower selection cleared');
   } else {
     // Select new type
     gameState.selectTowerType(towerType);
-    console.log(`🏹 Selected tower: ${towerType}`);
+    console.log(`Selected tower: ${towerType}`);
   }
 }
 
@@ -243,7 +243,7 @@ export function handleTowerDragEnd(worldX, worldY, gameEngine) {
 
   if (nearbyTowers.length > 0) {
     // Tower was selected and dragged
-    console.log('✋ Tower drag ended');
+    console.log('Tower drag ended');
   }
 
   gameState.setTowerDragging(false);

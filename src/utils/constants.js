@@ -32,7 +32,7 @@ export const GRID_CONFIG = {
 
 // Calculate total width/height from grid
 CANVAS_CONFIG.width = GRID_CONFIG.cols * GRID_CONFIG.tileSize;
-CANVAS_CONFIG.height = GRID_CONFIG.rows * GRID_CONFIG.tileSize;
+CANVAS_CONFIG.height = GRID_CONFIG.rows * GRID_CONFIG.tileSize + 80;
 
 // ============================================
 // GAME CONFIGURATION
