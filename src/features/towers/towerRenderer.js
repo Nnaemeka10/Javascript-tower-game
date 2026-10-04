@@ -21,7 +21,7 @@ class TowerRenderer {
     // Rendering options
     this.showRange = false; // Toggle with debug
     this.showHealth = true;
-    this.showLevel = true;
+    this.showTier = true;
     this.showAim = true;
     this.showCooldown = true;
 
@@ -52,7 +52,7 @@ class TowerRenderer {
     for (const tower of towers) {
       this.renderTower(tower);
 
-      if (this.showRange) {
+      if (tower.isSelected || this.showRange) {
         this.renderRangeIndicator(tower);
       }
     }
@@ -277,9 +277,9 @@ class TowerRenderer {
       this.drawHealthBar(tower.x, baseY, tower);
     }
 
-    // Level display
-    if (this.showLevel) {
-      this.drawLevelDisplay(tower.x, baseY + 12, tower);
+    // Tier display
+    if (this.showTier) {
+      this.drawTierBadge(tower.x, baseY + 12, tower);
     }
 
     // Cooldown indicator
@@ -336,24 +336,13 @@ class TowerRenderer {
    * Draw level display
    * @private
    */
-  drawLevelDisplay(x, y, tower) {
-    const config = TOWER_CONFIG[tower.type];
-
-    // Level badge background
-    this.renderSurface.drawCircle(
-      x,
-      y,
-      8,
-      config.color
-    );
-
-    // Level text
-    this.renderSurface.drawText(
-      `L${tower.level}`,
-      x,
-      y,
-      { font: 'bold 10px Arial', color: '#FFFFFF', align: 'center', baseline: 'middle' }
-    );
+  drawTierBadge(x, y, tower) {
+    const u = tower.getUpgradeInfo();
+    const col = { 1: '#9c9cb4', 2: '#6ee7ff', 3: '#ffcc4d' }[u.tier];
+    this.renderSurface.drawCircle(x, y, 9, 'rgba(13,13,26,0.9)',
+      { stroke: true, strokeColor: col, strokeWidth: 1.5 });
+    this.renderSurface.drawText(u.tierLabel, x, y,
+      { font: 'bold 10px Arial', color: col, align: 'center', baseline: 'middle' });
   }
 
   /**
@@ -390,7 +379,7 @@ class TowerRenderer {
    * Draw range indicator (for debugging)
    * @private
    */
-  drawRangeIndicator(tower) {
+  renderRangeIndicator(tower) {
     const config = TOWER_CONFIG[tower.type];
 
     // Range circle (semi-transparent)
@@ -466,8 +455,8 @@ class TowerRenderer {
    * Enable/disable level display
    * @param {boolean} show - Show level
    */
-  setShowLevel(show) {
-    this.showLevel = show;
+  setShowTier(show) {
+    this.showTier = show;
   }
 
   /**
@@ -479,7 +468,7 @@ class TowerRenderer {
       initialized: this.isInitialized,
       showRange: this.showRange,
       showHealth: this.showHealth,
-      showLevel: this.showLevel,
+      showTier: this.showTier,
       showAim: this.showAim,
       showCooldown: this.showCooldown,
     };

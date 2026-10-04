@@ -192,120 +192,106 @@ class UIRenderer {
 
   /**
    * Render tower info panel
+   * @param {Object} towerInfo - Information about the tower to display
    * @private
    */
   renderTowerPanel(towerInfo) {
     if (!towerInfo) return;
 
-    const dims = this.getWorldSize();
-    const panelX = this.hudPadding;
-    const panelY = this.hudPadding;
+    const P = 10;
+    const pw = 270, ph = 250;
+    const px = this.hudPadding, py = this.hudPadding;
+    const u = towerInfo.upgrade;
+    const tierCol = { 1: '#9c9cb4', 2: '#6ee7ff', 3: '#ffcc4d' }[u.tier];
 
-    // Panel background
-    this.renderSurface.drawRect(
-      panelX,
-      panelY,
-      this.panelWidth,
-      this.panelHeight,
-      this.colors.panelBackground,
-      { stroke: true, strokeColor: this.colors.panelBorder, strokeWidth: 2 }
-    );
+    // ---- frame
+    this.renderSurface.drawRect(px, py, pw, ph, 'rgba(18,18,30,0.95)',
+      { stroke: true, strokeColor: '#3d3d5c', strokeWidth: 1 });
 
-    let y = panelY + 10;
+    // ---- header band in tower accent + tier pill
+    this.renderSurface.drawRect(px, py, pw, 34, towerInfo.accent);
+    this.renderSurface.drawText(`${towerInfo.emoji}  ${towerInfo.name}`,
+      px + P, py + 10, { font: 'bold 13px Arial', color: '#0d0d1a', align: 'left', baseline: 'top' });
+    this.renderSurface.drawRect(px + pw - P - 64, py + 6, 64, 22, 'rgba(13,13,26,0.85)',
+      { stroke: true, strokeColor: tierCol, strokeWidth: 1 });
+    this.renderSurface.drawText(`TIER ${u.tierLabel}`,
+      px + pw - P - 32, py + 17, { font: 'bold 11px Arial', color: tierCol, align: 'center', baseline: 'middle' });
 
-    // Tower name and type
+    // ---- 30-notch upgrade bar (notches at 10 / 20 = tier boundaries)
+    const barX = px + P, barY = py + 46, barW = pw - P * 2, barH = 8;
+    this.renderSurface.drawRect(barX, barY, barW, barH, '#232338',
+      { stroke: true, strokeColor: '#3d3d5c', strokeWidth: 1 });
+    this.renderSurface.drawRect(barX, barY, barW * (u.count / u.max), barH, '#22d3a7');
+    for (const n of [10, 20]) {
+      this.renderSurface.drawRect(barX + barW * (n / u.max) - 1, barY - 2, 2, barH + 4, '#0d0d1a');
+    }
+    const caption = u.canUpgrade
+      ? `Upgrades ${u.count}/${u.max}   ·   next ${u.nextCost}g${u.nextIsTierUp ? '   ·   TIER UP' : ''}`
+      : 'FULLY UPGRADED';
+    this.renderSurface.drawText(caption, barX, barY + 14, {
+      font: '10px Arial',
+      color: !u.canUpgrade ? '#22d3a7' : u.nextIsTierUp ? '#ffcc4d' : '#9c9cb4',
+      align: 'left', baseline: 'top',
+    });
+
+    // ---- stats: 2 columns (value + growth bar relative to max potential)
+    const col1 = px + P, col2 = px + pw / 2 + 4;
+    const rowY = py + 84;
+    const lbl = { font: '9px Arial', color: '#9c9cb4', align: 'left', baseline: 'top' };
+    const val = { font: 'bold 13px Arial', color: '#ececf4', align: 'left', baseline: 'top' };
+
+    // Damage (bar vs 3.3× base)
+    this.renderSurface.drawText('DAMAGE', col1, rowY, lbl);
+    this.renderSurface.drawText(String(towerInfo.damage), col1, rowY + 11, val);
+    this.statBar(col1, rowY + 28, 118, 5, towerInfo.damage / (towerInfo.baseDamage * 3.3), '#22d3a7');
+    // Range (bar vs 1.6× base)
+    this.renderSurface.drawText('RANGE', col2, rowY, lbl);
+    this.renderSurface.drawText(String(towerInfo.range), col2, rowY + 11, val);
+    this.statBar(col2, rowY + 28, 118, 5, towerInfo.range / (towerInfo.baseRange * 1.6), '#6ee7ff');
+    // Fire rate
+    this.renderSurface.drawText('RATE', col1, rowY + 46, lbl);
+    this.renderSurface.drawText(`${towerInfo.shotsPerSec}/s`, col1, rowY + 57, val);
+    // Health (live bar, color-coded)
+    this.renderSurface.drawText('HP', col2, rowY + 46, lbl);
+    this.renderSurface.drawText(`${Math.ceil(towerInfo.health)}/${towerInfo.maxHealth}`, col2, rowY + 57, val);
+    const hpFrac = parseFloat(towerInfo.healthPercent) / 100;
+    const hpCol = hpFrac > 0.5 ? '#22d3a7' : hpFrac > 0.25 ? '#ffcc4d' : '#ff5c5c';
+    this.statBar(col2, rowY + 74, 118, 5, hpFrac, hpCol);
+
+    // ---- tier ability teaser (Phase 3 fills tierAbilities; shows only when defined)
+    let ay = rowY + 92;
+    if (u.nextTierAbility) {
+      this.renderSurface.drawText(`✦ Tier ${u.tier + 1} unlock: ${u.nextTierAbility}`,
+        px + P, ay, { font: '10px Arial', color: '#ffcc4d', align: 'left', baseline: 'top' });
+      ay += 16;
+    }
+
+    // ---- combat record
     this.renderSurface.drawText(
-      `${towerInfo.emoji} ${towerInfo.name}`,
-      panelX + 10,
-      y,
-      {
-        font: 'bold 14px Arial',
-        color: this.colors.hudAccent,
-        align: 'left',
-        baseline: 'top',
-      }
-    );
+      `⚔  ${towerInfo.combat.kills} kills   ·   ${towerInfo.combat.damageDealt} dmg dealt`,
+      px + P, ay, { font: '10px Arial', color: '#9c9cb4', align: 'left', baseline: 'top' });
 
-    y += 25;
+    // ---- footer
+    if (u.canUpgrade) {
+      this.renderSurface.drawText('[U] Upgrade      [S] Sell',
+        px + pw / 2, py + ph - 12,
+        { font: '10px Arial', color: '#9c9cb4', align: 'center', baseline: 'middle' });
+    }
+  }
 
-    // Level
-    this.renderSurface.drawText(
-      `Level: ${towerInfo.level}`,
-      panelX + 10,
-      y,
-      {
-        font: '12px Arial',
-        color: this.colors.hudText,
-        align: 'left',
-        baseline: 'top',
-      }
-    );
-
-    y += 20;
-
-    // Health bar
-    this.renderHealthBar(panelX + 10, y, towerInfo);
-    y += 20;
-
-    // Stats
-    this.renderSurface.drawText(
-      `Damage: ${towerInfo.damage}`,
-      panelX + 10,
-      y,
-      {
-        font: '12px Arial',
-        color: this.colors.hudText,
-      }
-    );
-
-    y += 18;
-
-    this.renderSurface.drawText(
-      `Range: ${towerInfo.range}`,
-      panelX + 10,
-      y,
-      {
-        font: '12px Arial',
-        color: this.colors.hudText,
-      }
-    );
-
-    y += 18;
-
-    this.renderSurface.drawText(
-      `Rate: ${towerInfo.fireRate.toFixed(1)}/s`,
-      panelX + 10,
-      y,
-      {
-        font: '12px Arial',
-        color: this.colors.hudText,
-      }
-    );
-
-    y += 25;
-
-    // Stats
-    this.renderSurface.drawText(
-      `Kills: ${towerInfo.enemiesKilled}`,
-      panelX + 10,
-      y,
-      {
-        font: '11px Arial',
-        color: this.colors.infoText,
-      }
-    );
-
-    y += 16;
-
-    this.renderSurface.drawText(
-      `Damage: ${towerInfo.totalDamageDealt}`,
-      panelX + 10,
-      y,
-      {
-        font: '11px Arial',
-        color: this.colors.infoText,
-      }
-    );
+  /** Small labeled growth bar. 
+   * @private 
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {number} w - Width
+   * @param {number} h - Height
+   * @param {number} frac - Fraction (0-1)
+   * @param {string} color - Fill color
+   */
+  statBar(x, y, w, h, frac, color) {
+    frac = Math.max(0, Math.min(1, frac));
+    this.renderSurface.drawRect(x, y, w, h, '#232338');
+    if (frac > 0) this.renderSurface.drawRect(x, y, w * frac, h, color);
   }
 
   /**

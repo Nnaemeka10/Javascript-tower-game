@@ -78,40 +78,13 @@ export function handleTowerPlacement(worldX, worldY, gameEngine) {
  */
 export function handleTowerSelection(worldX, worldY, gameEngine) {
   const towerManager = gameEngine.getManager('tower');
-  const gameState = gameEngine.getGameState();
 
-  // Find towers near click position (within 20px)
-  const nearbyTowers = towerManager.getTowersInArea(worldX, worldY, 20);
+  const gridX = Math.floor(worldX / CANVAS_CONFIG.tileSize);
+  const gridY = Math.floor(worldY / CANVAS_CONFIG.tileSize);
+  const tower = towerManager.getTowerAt(gridX, gridY);
 
-  if (nearbyTowers.length === 0) {
-    // No tower selected, deselect all
-    towerManager.selectTower(null);
-    return null;
-  }
-
-  // Select closest tower
-  let closestTower = nearbyTowers[0];
-  let closestDistance = Math.hypot(
-    closestTower.x - worldX,
-    closestTower.y - worldY
-  );
-
-  for (let i = 1; i < nearbyTowers.length; i++) {
-    const distance = Math.hypot(
-      nearbyTowers[i].x - worldX,
-      nearbyTowers[i].y - worldY
-    );
-
-    if (distance < closestDistance) {
-      closestTower = nearbyTowers[i];
-      closestDistance = distance;
-    }
-  }
-
-  towerManager.selectTower(closestTower);
-  console.log(`Tower selected: ${closestTower.type} at level ${closestTower.level}`);
-
-  return closestTower;
+  towerManager.selectTower(tower);   // null clears selection + range circle
+  return tower;
 }
 
 /**
@@ -256,24 +229,24 @@ export function handleTowerDragEnd(worldX, worldY, gameEngine) {
  */
 export function getTowerInfo(tower) {
   if (!tower) return null;
-
   return {
     id: tower.id,
     type: tower.type,
     name: tower.config.name,
     emoji: tower.config.emoji,
-    level: tower.level,
+    accent: tower.config.color,
     health: tower.health,
     maxHealth: tower.maxHealth,
     healthPercent: (tower.getHealthPercentage() * 100).toFixed(1),
-    damage: tower.calculateDamage(),
+    damage: tower.getDamageStat(),
+    baseDamage: tower.config.damage,
     range: Math.floor(tower.range),
-    fireRate: tower.config.fireRate,
-    experience: tower.experiencePoints,
-    nextLevelExp: tower.experienceToNextLevel,
-    experiencePercent: (tower.getExperiencePercentage() * 100).toFixed(1),
-    targets: tower.config.targetingStrategy,
-    totalDamageDealt: tower.totalDamageDealt,
-    enemiesKilled: tower.enemiesKilled,
+    baseRange: tower.config.range,
+    shotsPerSec: (1 / tower.config.fireRate).toFixed(1),   // fixed old "0.5/s" mislabel
+    upgrade: tower.getUpgradeInfo(),
+    combat: {
+      kills: tower.enemiesKilled,
+      damageDealt: Math.round(tower.totalDamageDealt),
+    },
   };
 }

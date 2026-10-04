@@ -192,8 +192,8 @@ export function getWaveReward(waveNumber) {
   if (!config) return 0;
 
   // Scale reward: +20% per wave
-  const scaledReward = config.baseReward * Math.pow(1.2, waveNumber - 1);
-  return Math.floor(scaledReward);
+  const bossMult = config.isBoss ? 2 : 1;
+  return (config.baseReward + waveNumber * 10) * bossMult;
 }
 
 /**

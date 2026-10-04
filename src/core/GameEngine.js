@@ -165,7 +165,7 @@ class GameEngine {
           break;
 
         case 'moneyChanged':
-          // Update UI with new money
+          this.managers.money.recordMoneyChanged(data);   
           break;
 
         case 'livesChanged':
@@ -356,20 +356,20 @@ class GameEngine {
         // Apply damage if hit
         if (hit) {
           const damage = projectile.damage;
-          const damageType = projectile.damageType || 'normal';
-          enemy.takeDamage(damage, damageType);
+          const damageType = projectile.damageType;
+          const actual = enemy.takeDamage(damage, damageType);
 
+          const sourceTower = projectile.sourceTowerId != null
+            ? this.managers.tower.getTowerById(projectile.sourceTowerId) : null;
+          if (sourceTower) sourceTower.recordDamage(actual);
           projectile.hit();
 
-
-          // Award money if enemy died
           if (enemy.isDead) {
-            this.managers.money.addMoney(enemy.bounty);
+            if (sourceTower) sourceTower.recordKill(enemy.bounty);
+            this.gameState.addMoney(enemy.bounty);
             this.gameState.incrementEnemiesKilled(1);
             this.gameState.addScore(enemy.bounty);
           }
-
-          // Only one hit per projectile
           break;
         }
       }
@@ -436,7 +436,6 @@ class GameEngine {
     ) {
       // Complete the wave and get reward
       const reward = waves.completeWave(this.gameState);
-      this.managers.money.addMoney(reward);
       
       // Check if there are more waves
       if (waves.getCurrentWave() <= waves.getTotalWaves()) {

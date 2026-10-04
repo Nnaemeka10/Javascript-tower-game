@@ -45,12 +45,13 @@ class EnemyManager {
     /**
      * Spawn an Enemy of a specific type
      * @param {String} enemyType - Type of enemy to be spawned (Goblin, Dwarve, etc.)
+     * @param {number} waveNumber - The wave number this enemy belongs to
      * @returns {Enemy|null} Spawned enemy of null if failed
      */
-    spawnEnemy(enemyType){
+    spawnEnemy(enemyType, waveNumber = 1) {
         try {
             //Get enemy configuration
-            const config = getEnemyConfig(enemyType);
+            const config = getEnemyConfig(enemyType, waveNumber);
             if(!config) {
                 console.warn(`Unknown enemy type: ${enemyType}`)
                 return null;

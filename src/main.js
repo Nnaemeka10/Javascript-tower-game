@@ -115,6 +115,16 @@ function setupKeyboardShortcuts() {
         handleDebugKey();
         break;
 
+      case 'KeyU':
+        event.preventDefault();
+        if (gameEngine) gameEngine.getManager('ui').requestTowerUpgrade(gameEngine);
+        break;
+
+      case 'KeyS':
+        event.preventDefault();
+        if (gameEngine) gameEngine.getManager('ui').requestTowerSell(gameEngine);
+        break;
+
       // Number keys for tower selection (1-9)
       case 'Digit1':
       case 'Digit2':
@@ -235,7 +245,7 @@ function handleTowerSelectionKey(keyCode) {
   if (towerNumber > 0 && towerNumber <= towerTypes.length) {
     const selectedTowerType = towerTypes[towerNumber - 1];
     gameEngine.getGameState().selectTowerType(selectedTowerType);
-    console.log(`🏹 Selected tower: ${selectedTowerType}`);
+    console.log(`🏹Selected tower: ${selectedTowerType}`);
   }
 }
 

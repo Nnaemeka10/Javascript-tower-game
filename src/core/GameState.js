@@ -4,6 +4,7 @@
  * Manages all game flags, counters, and provides methods to update them.
  * Acts as the single source of truth for game state.
  */
+import { GAME_CONFIG } from '../utils/constants.js';
 
 class GameState {
     constructor (){
@@ -16,8 +17,8 @@ class GameState {
         this.hasError = false;
 
         //player Resources
-        this.money = 500; //starting budget
-        this.lives = 20; //.. lives
+        this.money = GAME_CONFIG.startingMoney;
+        this.lives = GAME_CONFIG.startingLives;
         this.score = 0;
 
         //Game Progress
@@ -65,8 +66,8 @@ class GameState {
         this.hasError = false;
 
         //player Resources
-        this.money = 500; 
-        this.lives = 20; 
+        this.money = GAME_CONFIG.startingMoney;
+        this.lives = GAME_CONFIG.startingLives;
         this.score = 0;
 
         //Game Progress

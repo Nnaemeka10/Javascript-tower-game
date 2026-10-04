@@ -39,12 +39,12 @@ class WaveManager {
    * Initialize wave manager
    */
   async initialize() {
-    console.log('🌊 WaveManager initializing...');
+    console.log('WaveManager initializing...');
 
     this.currentWave = 1;
     this.isInitialized = true;
 
-    console.log('✅ WaveManager initialized');
+    console.log('WaveManager initialized');
   }
 
   /**
@@ -54,7 +54,7 @@ class WaveManager {
    */
   startWave(enemyManager, gameState) {
     if (this.currentWave > this.totalWaves) {
-      console.warn('⚠️ All waves already completed');
+      console.warn('All waves already completed');
       return;
     }
 
@@ -72,7 +72,7 @@ class WaveManager {
     gameState.startWave();
 
     const waveConfig = getWaveConfig(this.currentWave);
-    console.log(`🌊 Wave ${this.currentWave} started: ${waveConfig.name}`);
+    console.log(`Wave ${this.currentWave} started: ${waveConfig.name}`);
   }
 
   /**
@@ -87,6 +87,7 @@ class WaveManager {
       return [];
     }
 
+    
     this.waveElapsedTime += deltaTime;
     this.nextSpawnTime -= deltaTime;
 
@@ -94,7 +95,7 @@ class WaveManager {
     const waveConfig = getWaveConfig(this.currentWave);
 
     if (!waveConfig) {
-      console.error('❌ Invalid wave config');
+      console.error('Invalid wave config');
       return [];
     }
 
@@ -108,7 +109,7 @@ class WaveManager {
 
       // Spawn one enemy from current group
       if (this.currentSpawnCount < spawnGroup.count) {
-        const enemy = enemyManager.spawnEnemy(spawnGroup.type);
+        const enemy = enemyManager.spawnEnemy(spawnGroup.type, this.currentWave);
 
         if (enemy) {
           spawnedEnemies.push(enemy);
@@ -165,7 +166,7 @@ class WaveManager {
     
     if (this.currentWave > this.totalWaves) {
       // All waves completed
-      console.log('✨ All waves completed! You win!');
+      console.log('All waves completed! You win!');
     }
     return reward;
   }
@@ -264,7 +265,7 @@ class WaveManager {
     this.allEnemiesSpawned = false;
     this.enemiesSpawnedThisWave = 0;
 
-    console.log('🔄 Wave manager reset');
+    console.log('Wave manager reset');
   }
 
   /**

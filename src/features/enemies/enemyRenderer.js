@@ -22,7 +22,7 @@ class EnemyRenderer {
    */
   constructor(renderSurface) {
     if (!renderSurface) {
-      throw new Error('❌ EnemyRenderer requires a RenderSurface instance');
+      throw new Error('EnemyRenderer requires a RenderSurface instance');
     }
 
     this.surface = renderSurface;
@@ -56,7 +56,7 @@ class EnemyRenderer {
       },
     };
 
-    console.log('✅ EnemyRenderer created');
+    console.log('EnemyRenderer created');
   }
 
   /**
@@ -66,9 +66,9 @@ class EnemyRenderer {
     try {
       // Load enemy sprites here if using images
       // For now, we'll use colored shapes
-      console.log('✅ EnemyRenderer initialized');
+      console.log('EnemyRenderer initialized');
     } catch (error) {
-      console.error('❌ Failed to initialize EnemyRenderer:', error);
+      console.error('Failed to initialize EnemyRenderer:', error);
       throw error;
     }
   }

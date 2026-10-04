@@ -201,7 +201,7 @@ class UIManager {
 
     if (success) {
       this.showNotification(
-        `Tower upgraded to level ${this.selectedTower.level}`,
+        `Upgraded - ${this.selectedTower.upgradeCount}/30 (Tier ${this.selectedTower.getUpgradeInfo().tierLabel})`,
         'success'
       );
     } else {

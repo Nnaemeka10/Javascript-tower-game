@@ -11,6 +11,7 @@
  */
 
 import { TOWER_CONFIG } from './towerConfig.js';
+import { UPGRADE_CONFIG, getTier, getUpgradeCost, TIER_LABELS } from './upgradeConfig.js';
 
 class Tower {
   /**
@@ -53,9 +54,7 @@ class Tower {
     this.shotsToFire = 0; // Queue for burst firing
 
     // Upgrades
-    this.level = 1;
-    this.experiencePoints = 0;
-    this.experienceToNextLevel = 100;
+    this.upgradeCount = 0;
 
     // Health and status
     this.health = this.config.health;
@@ -66,7 +65,6 @@ class Tower {
     // Statistics
     this.totalDamageDealt = 0;
     this.enemiesKilled = 0;
-    this.totalMoneyGenerated = 0;
 
     // State tracking
     this.hasShot = false;
@@ -115,6 +113,38 @@ class Tower {
     }
 
     return null;
+  }
+
+  /** Recompute combat stats from base config + upgradeCount. THE single writer. */
+  applyDerivedStats() {
+    const g = this.config.upgradeGrowth ?? UPGRADE_CONFIG.growth;  // Phase 3 hook
+    const c = this.upgradeCount;
+    const tierUps = (c >= 10 ? 1 : 0) + (c >= 20 ? 1 : 0);
+    this.damageMult = 1 + c * g.damage + tierUps * UPGRADE_CONFIG.tierBonusDamage;
+    this.range = this.config.range * (1 + c * g.range);
+    this.maxHealth = Math.floor(this.config.health * (1 + c * g.health));
+  }
+
+  getTier() { return getTier(this.upgradeCount); }
+
+  /** Deterministic damage for DISPLAY (panel must not jitter). */
+  getDamageStat() { return Math.round(this.config.damage * this.damageMult); }
+
+  /** Everything the panel + UI needs, in one call. */
+  getUpgradeInfo() {
+    const count = this.upgradeCount;
+    const maxed = count >= UPGRADE_CONFIG.maxUpgrades;
+    const tier = getTier(count);
+    return {
+      count, max: UPGRADE_CONFIG.maxUpgrades,
+      tier, tierLabel: TIER_LABELS[tier - 1],
+      stepInTier: count % 10,
+      nextCost: getUpgradeCost(count),
+      canUpgrade: !maxed,
+      nextIsTierUp: !maxed && (count + 1 === 10 || count + 1 === 20),
+      nextTierAbility: !maxed && (count + 1 === 10 || count + 1 === 20)
+        ? (this.config.tierAbilities?.[tier + 1] ?? null) : null,
+    };
   }
 
   /**
@@ -301,23 +331,6 @@ class Tower {
   }
 
   /**
-   * Calculate tower damage with upgrades applied
-   * @returns {number} Calculated damage
-   */
-  calculateDamage() {
-    let baseDamage = this.config.damage;
-
-    // Apply level multiplier
-    baseDamage *= (1 + (this.level - 1) * 0.15); // 15% per level
-
-    // Apply random variance (±10%)
-    const variance = 0.9 + Math.random() * 0.2;
-    baseDamage *= variance;
-
-    return Math.round(baseDamage);
-  }
-
-  /**
    * Take damage (towers have health)
    * @param {number} amount - Damage amount
    * @returns {boolean} True if tower is still alive
@@ -359,46 +372,23 @@ class Tower {
    * @returns {boolean} Success
    */
   upgrade() {
-    if (this.level >= this.config.maxLevel) {
-      console.warn(`Tower ${this.id} is already max level`);
-      return false;
-    }
-
-    this.level++;
-    this.experiencePoints = 0;
-    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
-
-    // Improve stats with level
-    this.maxHealth = Math.floor(this.maxHealth * 1.1);
-    this.health = this.maxHealth;
-    this.range *= 1.05;
-
-    console.log(`Tower ${this.id} upgraded to level ${this.level}`);
-
-    return true;
+    if (this.upgradeCount >= UPGRADE_CONFIG.maxUpgrades) return false;
+    const wasTier = getTier(this.upgradeCount);
+    this.upgradeCount++;
+    this.applyDerivedStats();
+    this.health = this.maxHealth;              // upgrade = full repair
+    return getTier(this.upgradeCount) > wasTier; // true if tier-up
   }
 
   /**
-   * Add experience points
-   * @param {number} amount - Experience to add
-   * @returns {number} New level if upgraded, 0 otherwise
+   * Calculate tower damage with upgrades applied
+   * @returns {number} Calculated damage
    */
-  addExperience(amount) {
-    this.experiencePoints += amount;
-
-    let newLevel = 0;
-    while (
-      this.experiencePoints >= this.experienceToNextLevel &&
-      this.level < this.config.maxLevel
-    ) {
-      this.experiencePoints -= this.experienceToNextLevel;
-      if (this.upgrade()) {
-        newLevel = this.level;
-      }
-    }
-
-    return newLevel;
+  calculateDamage() {                          // fire-time roll only
+    const base = this.config.damage * this.damageMult;
+    return Math.round(base * (0.9 + Math.random() * 0.2));
   }
+
 
   /**
    * Get health percentage (0-1)
@@ -446,19 +436,16 @@ class Tower {
    * Used by object pool
    */
   reset() {
+    this.upgradeCount = 0;
     this.targetEnemy = null;
-    this.targetX = null;
-    this.targetY = null;
     this.rotation = 0;
     this.shotCooldown = 0;
-    this.level = 1;
-    this.experiencePoints = 0;
-    this.experienceToNextLevel = 100;
-    this.health = this.maxHealth;
-    this.isDead = false;
     this.isSelected = false;
     this.hasShot = false;
     this.isActive = true;
+    this.isDead = false;
+    this.applyDerivedStats();                 
+    this.health = this.maxHealth;
     this.totalDamageDealt = 0;
     this.enemiesKilled = 0;
     this.totalMoneyGenerated = 0;
@@ -476,7 +463,8 @@ class Tower {
       y: this.y,
       gridX: this.gridX,
       gridY: this.gridY,
-      level: this.level,
+      tier: this.getTier(),
+      upgrades: `${this.upgradeCount}/30`,
       health: `${this.health}/${this.maxHealth}`,
       range: this.range,
       cooldown: this.shotCooldown.toFixed(2),

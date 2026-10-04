@@ -13,6 +13,7 @@
 import Tower from './Tower.js';
 import { TOWER_CONFIG, getTowerConfig, getTowerCost } from './towerConfig.js';
 import { CANVAS_CONFIG } from '../../utils/constants.js';
+import { UPGRADE_CONFIG, getUpgradeCost } from './upgradeConfig.js';
 
 class TowerManager {
   constructor() {
@@ -115,8 +116,11 @@ class TowerManager {
     // Deduct money from player
     gameState.spendMoney(cost);
 
+    // Snap to grid
+    const snappedX = gridX * CANVAS_CONFIG.tileSize + CANVAS_CONFIG.tileSize / 2;
+    const snappedY = gridY * CANVAS_CONFIG.tileSize + CANVAS_CONFIG.tileSize / 2;
     // Create or reuse tower
-    const tower = this.createTower(towerType, x, y, gridX, gridY);
+    const tower = this.createTower(towerType, snappedX, snappedY, gridX, gridY);
 
     if (!tower) {
       // Refund money if creation failed
@@ -312,22 +316,17 @@ class TowerManager {
    * @returns {boolean} Success
    */
   upgradeTower(tower, gameState) {
-    if (tower.level >= tower.config.maxLevel) {
-      console.warn(`Tower ${tower.id} is already max level`);
-      return false;
-    }
+    if (tower.upgradeCount >= UPGRADE_CONFIG.maxUpgrades) return false;
 
-    const cost = Math.floor(tower.config.upgradeCost * Math.pow(1.15, tower.level - 1));
-
+    const cost = getUpgradeCost(tower.upgradeCount);
     if (!gameState.canAfford(cost)) {
       console.warn(`Cannot afford upgrade (cost: ${cost}, money: ${gameState.getMoney()})`);
       return false;
     }
-
     gameState.spendMoney(cost);
-    tower.upgrade();
+    const tierUp = tower.upgrade();
     this.totalMoneySpent += cost;
-
+    if (tierUp) console.log(`⬆ Tower ${tower.id} reached TIER ${tower.getUpgradeInfo().tierLabel}`);
     return true;
   }
 
