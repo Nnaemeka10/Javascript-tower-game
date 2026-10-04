@@ -11,7 +11,7 @@
  */
 
 import Tower from './Tower.js';
-import { TOWER_CONFIG, getTowerConfig, getTowerCost } from './towerConfig.js';
+import { TOWER_CONFIG, getTowerCost } from './towerConfig.js';
 import { CANVAS_CONFIG } from '../../utils/constants.js';
 import { UPGRADE_CONFIG, getUpgradeCost } from './upgradeConfig.js';
 
@@ -56,7 +56,7 @@ class TowerManager {
     // Pre-pool some tower instances for performance
     // Note: These are placeholder towers - they'll be reconfigured when used
     for (let i = 0; i < 20; i++) {
-      this.pool.push(new Tower(0, 'archer', 0, 0, 0, 0));
+      this.pool.push(new Tower(0, 'ballista', 0, 0, 0, 0));
     }
 
     this.isInitialized = true;
@@ -211,23 +211,20 @@ class TowerManager {
    */
   update(deltaTime, enemies, projectileManager) {
     for (const tower of this.towers) {
-      const projectileData = tower.update(deltaTime, enemies);
+      const shots = tower.update(deltaTime, enemies);
 
-      // If tower should fire, have projectile manager create projectile
-      if (projectileData && projectileManager) {
-        projectileManager.createProjectile(
-          projectileData.type,
-          projectileData.startX,
-          projectileData.startY,
-          projectileData.targetX,
-          projectileData.targetY,
-          projectileData.damage,
-          {
-            damageType: projectileData.damageType,
-            target: projectileData.target,
-            sourceTowerId: tower.id,
-          }
-        );
+      if (shots && shots.length > 0 && projectileManager) {
+        for (const shot of shots) {
+          projectileManager.createProjectile(
+            shot.type, shot.startX, shot.startY,
+            shot.targetX, shot.targetY, shot.damage,
+            {
+              damageType: shot.damageType,
+              target: shot.targetEnemy,     
+              sourceTowerId: tower.id,
+            }
+          );
+        }
       }
     }
   }

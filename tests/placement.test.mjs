@@ -95,8 +95,8 @@ test('LINK 1d — clicks in the HUD band map to grid row 15 (out of bounds)', ()
 test('LINK 2a — tower type selection round-trip', () => {
   const gs = new GameState();
   assert.equal(gs.getSelectedTowerType(), null);
-  gs.selectTowerType('archer');
-  assert.equal(gs.getSelectedTowerType(), 'archer');
+  gs.selectTowerType('ballista');
+  assert.equal(gs.getSelectedTowerType(), 'ballista');
   gs.deselectTowerType();
   assert.equal(gs.getSelectedTowerType(), null);
 });
@@ -136,7 +136,7 @@ test('LINK 3c — isOnPath: on-path, adjacent, clear tiles', () => {
 test('LINK 4a — valid tile: places tower and charges gold', async () => {
   const { gameState, towerManager } = await makeGameBits();
   const before = gameState.getMoney();
-  const tower = towerManager.placeTower('archer', 100, 100, gameState); // grid (2,2)
+  const tower = towerManager.placeTower('ballista', 100, 100, gameState); // grid (2,2)
   assert.ok(tower, 'placement should succeed');
   assert.equal(tower.gridX, 2);
   assert.equal(tower.gridY, 2);
@@ -145,13 +145,13 @@ test('LINK 4a — valid tile: places tower and charges gold', async () => {
 
 test('LINK 4b — rejects: path / blocked / HUD-band / occupied / broke', async () => {
   const { gameState, towerManager } = await makeGameBits();
-  assert.equal(towerManager.placeTower('archer', 100, 300, gameState), null); // (2,7) on path
-  assert.equal(towerManager.placeTower('archer', 340, 300, gameState), null); // (8,7) blocked
-  assert.equal(towerManager.placeTower('archer', 100, 640, gameState), null); // row 15 HUD band
-  assert.ok(towerManager.placeTower('archer', 100, 100, gameState));          // (2,2) ok
-  assert.equal(towerManager.placeTower('archer', 110, 105, gameState), null); // same tile
+  assert.equal(towerManager.placeTower('ballista', 100, 300, gameState), null); // (2,7) on path
+  assert.equal(towerManager.placeTower('ballista', 340, 300, gameState), null); // (8,7) blocked
+  assert.equal(towerManager.placeTower('ballista', 100, 640, gameState), null); // row 15 HUD band
+  assert.ok(towerManager.placeTower('ballista', 100, 100, gameState));          // (2,2) ok
+  assert.equal(towerManager.placeTower('ballista', 110, 105, gameState), null); // same tile
   gameState.spendMoney(gameState.getMoney());                                // go broke
-  assert.equal(towerManager.placeTower('archer', 300, 100, gameState), null); // cannot afford
+  assert.equal(towerManager.placeTower('ballista', 300, 100, gameState), null); // cannot afford
   assert.equal(towerManager.getTowers().length, 1);
 });
 
@@ -165,7 +165,7 @@ test('LINK 5a — no selection or no hover → nothing drawn', async () => {
   renderer.render([], gameState, mapManager, towerManager);
   assert.equal(calls.circles.length + calls.rects.length, 0);
 
-  gameState.selectTowerType('archer');        // selected, still no hover
+  gameState.selectTowerType('ballista');        // selected, still no hover
   renderer.render([], gameState, mapManager, towerManager);
   assert.equal(calls.circles.length + calls.rects.length, 0);
 });
@@ -176,7 +176,7 @@ test('LINK 5b — selection + hover on clear tile → green ghost drawn', async 
   const renderer = new TowerRenderer(surface);
   await renderer.initialize();
 
-  gameState.selectTowerType('archer');
+  gameState.selectTowerType('ballista');
   gameState.setHoveredGridCell(2, 2);
   renderer.render([], gameState, mapManager, towerManager);
 
@@ -193,7 +193,7 @@ test('LINK 5c — hover over path tile → red ghost', async () => {
   const renderer = new TowerRenderer(surface);
   await renderer.initialize();
 
-  gameState.selectTowerType('archer');
+  gameState.selectTowerType('ballista');
   gameState.setHoveredGridCell(2, 7);         // on the path
   renderer.render([], gameState, mapManager, towerManager);
   const red = [...calls.circles, ...calls.rects].some(c => String(c.color).includes('255, 0, 0'));
@@ -207,7 +207,7 @@ test('LINK 6a — handleTowerPlacement: places, charges, deselects', async () =>
     getGameState: () => bits.gameState,
     getManager: (n) => (n === 'tower' ? bits.towerManager : n === 'map' ? bits.mapManager : null),
   };
-  bits.gameState.selectTowerType('archer');
+  bits.gameState.selectTowerType('ballista');
   handleTowerPlacement(100, 100, engine);
   assert.equal(bits.towerManager.getTowers().length, 1);
   assert.equal(bits.gameState.getSelectedTowerType(), null);   // exited placement mode
@@ -217,8 +217,8 @@ test('LINK 6a — handleTowerPlacement: places, charges, deselects', async () =>
 test('LINK 6b — handleTowerTypeSelection toggles', async () => {
   const bits = await makeGameBits();
   const engine = { getGameState: () => bits.gameState, getManager: () => null };
-  handleTowerTypeSelection('archer', engine);
-  assert.equal(bits.gameState.getSelectedTowerType(), 'archer');
-  handleTowerTypeSelection('archer', engine);                  // same card again
+  handleTowerTypeSelection('ballista', engine);
+  assert.equal(bits.gameState.getSelectedTowerType(), 'ballista');
+  handleTowerTypeSelection('ballista', engine);                  // same card again
   assert.equal(bits.gameState.getSelectedTowerType(), null);
 });

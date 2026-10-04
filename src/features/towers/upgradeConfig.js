@@ -21,6 +21,7 @@ export const UPGRADE_CONFIG = {
     damage: 0.07,   // +7% of base / purchase  → ×3.1 at 30
     range: 0.02,    // +2%                    → ×1.6 at 30
     health: 0.04,   // +4%                    → ×2.2 at 30
+    shotInterval: 0, // +0%                    → ×1.0 at 30 (no change)
   },
 
   // Extra jump on the purchase that crosses INTO tier 2 or 3

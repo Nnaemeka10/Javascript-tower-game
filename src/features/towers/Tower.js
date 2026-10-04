@@ -17,7 +17,7 @@ class Tower {
   /**
    * Create a new tower
    * @param {number} id - Unique tower identifier
-   * @param {string} type - Tower type (archer, mage, cannon, etc.)
+   * @param {string} type - Tower type (ballista, flame, cannon, etc.)
    * @param {number} x - World X position
    * @param {number} y - World Y position
    * @param {number} gridX - Grid X coordinate
@@ -34,7 +34,7 @@ class Tower {
     this.gridY = gridY;
 
     // Get config for this tower type
-    this.config = TOWER_CONFIG[type] || TOWER_CONFIG.archer;
+    this.config = TOWER_CONFIG[type] || TOWER_CONFIG.ballista; // default to ballista if type not found
 
     // Dimensions
     this.width = this.config.width;
@@ -69,6 +69,9 @@ class Tower {
     // State tracking
     this.hasShot = false;
     this.isActive = true;
+
+    this.totalMoneyGenerated = 0; // For sell price calculation
+    this.applyDerivedStats();
   }
 
   /**
@@ -101,11 +104,8 @@ class Tower {
       // Check if ready to shoot
       if (this.shotCooldown <= 0) {
         this.hasShot = true;
-        this.shotCooldown = this.config.fireRate;
-        this.lastShotTime = 0;
-
-        // Return projectile spawn data
-        return this.createProjectileData();
+        this.shotCooldown = this.shotInterval;
+        return this.createShots(enemies);
       }
     } else {
       // No target in range, reset state
@@ -114,15 +114,38 @@ class Tower {
 
     return null;
   }
+    /** All projectiles for this firing cycle. Multi-shot tier abilities included. */
+  createShots(enemies) {
+    if (!this.targetEnemy) return [];
+    const shots = [this.createProjectileData(this.targetEnemy)];
+
+    const tier = this.getTier();
+    const ab = this.config.tierAbilities;
+    let multi = 1;
+    if (tier >= 3 && ab?.[3]?.multiShot) multi = ab[3].multiShot;
+    else if (tier >= 2 && ab?.[2]?.multiShot) multi = ab[2].multiShot;
+
+    if (multi > 1) {
+      const others = enemies
+        .filter(e => e !== this.targetEnemy && !e.isDead && e.isActive && this.isTargetInRange(e))
+        .sort((a, b) => this.getDistanceToEnemy(a) - this.getDistanceToEnemy(b));
+      for (let i = 1; i < multi; i++) {
+        shots.push(this.createProjectileData(others[i - 1] ?? this.targetEnemy));
+      }
+    }
+    return shots;
+  }
+
 
   /** Recompute combat stats from base config + upgradeCount. THE single writer. */
   applyDerivedStats() {
-    const g = this.config.upgradeGrowth ?? UPGRADE_CONFIG.growth;  // Phase 3 hook
+    const g = { ...UPGRADE_CONFIG.growth, ...this.config.upgradeGrowth }; // overrides win
     const c = this.upgradeCount;
     const tierUps = (c >= 10 ? 1 : 0) + (c >= 20 ? 1 : 0);
     this.damageMult = 1 + c * g.damage + tierUps * UPGRADE_CONFIG.tierBonusDamage;
     this.range = this.config.range * (1 + c * g.range);
     this.maxHealth = Math.floor(this.config.health * (1 + c * g.health));
+    this.shotInterval = this.config.shotInterval * (1 + c * (g.shotInterval ?? 0));
   }
 
   getTier() { return getTier(this.upgradeCount); }
@@ -143,7 +166,7 @@ class Tower {
       canUpgrade: !maxed,
       nextIsTierUp: !maxed && (count + 1 === 10 || count + 1 === 20),
       nextTierAbility: !maxed && (count + 1 === 10 || count + 1 === 20)
-        ? (this.config.tierAbilities?.[tier + 1] ?? null) : null,
+        ? (this.config.tierAbilities?.[tier + 1]?.label ?? null) : null,
     };
   }
 
@@ -309,23 +332,15 @@ class Tower {
    * @private
    * @returns {Object} Projectile data
    */
-  createProjectileData() {
-    if (!this.targetEnemy) return null;
-
-    const projectileType = this.config.projectileType;
-    const damageWithUpgrades = this.calculateDamage();
-
+   createProjectileData(target) {
+    if (!target) return null;
     return {
-      type: projectileType,
-      startX: this.x,
-      startY: this.y,
-      targetX: this.targetEnemy.x,
-      targetY: this.targetEnemy.y,
-      targetEnemy: this.targetEnemy,
-      damage: damageWithUpgrades,
+      type: this.config.projectileType,
+      startX: this.x, startY: this.y,
+      targetX: target.x, targetY: target.y,
+      targetEnemy: target,
+      damage: this.calculateDamage(),
       damageType: this.config.damageType,
-      piercing: this.config.piercing,
-      areaOfEffect: this.config.areaOfEffect,
       towerId: this.id,
     };
   }
@@ -406,14 +421,7 @@ class Tower {
     return this.experiencePoints / this.experienceToNextLevel;
   }
 
-  /**
-   * Get shooting cooldown percentage (0-1)
-   * @returns {number} Cooldown percentage (0 = ready, 1 = fully charged)
-   */
-  getCooldownPercentage() {
-    return 1 - (this.shotCooldown / this.config.fireRate);
-  }
-
+ 
   /**
    * Record damage dealt (for statistics)
    * @param {number} amount - Damage amount

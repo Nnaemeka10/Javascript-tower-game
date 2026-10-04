@@ -269,6 +269,36 @@ class Enemy {
     this.health = Math.min(this.health + amount, this.maxHealth);
   }
 
+    /**
+   * Rewind the enemy backwards along its path (Freeze Tier III: Time Rewind).
+   * Clamps at the spawn point — cannot rewind off the board.
+   * @param {number} distance - pixels to rewind
+   */
+  pushBack(distance) {
+    if (this.isDead || !this.path || this.path.length < 2) return;
+    let remaining = distance;
+
+    while (remaining > 0) {
+      if (this.distanceAlongSegment >= remaining) {
+        this.distanceAlongSegment -= remaining;
+        remaining = 0;
+      } else {
+        remaining -= this.distanceAlongSegment;
+        if (this.pathIndex === 0) {              // spawn clamp
+          this.distanceAlongSegment = 0;
+          remaining = 0;
+        } else {
+          this.pathIndex--;
+          const a = this.path[this.pathIndex];
+          const b = this.path[this.pathIndex + 1];
+          this.distanceAlongSegment = Math.hypot(b.x - a.x, b.y - a.y); // at far end of previous segment
+        }
+      }
+    }
+    this.updatePosition();
+    this.updateDirection();
+  }
+
   /**
    * Apply slow effect
    * @param {number} slowFactor - Speed multiplier (0-1)

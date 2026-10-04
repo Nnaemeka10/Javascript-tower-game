@@ -353,7 +353,7 @@ class TowerRenderer {
     if (tower.shotCooldown <= 0) return;
 
     // Calculate remaining cooldown (1 = just fired, 0 = ready to fire)
-    const remainingCooldown = tower.shotCooldown / tower.config.fireRate;
+    const remainingCooldown = tower.shotCooldown / tower.shotInterval;
     const radius = tower.width / 2 + 4;
     const startAngle = -Math.PI / 2;
     const endAngle = startAngle + (remainingCooldown * 2 * Math.PI);

@@ -41,6 +41,7 @@ class Projectile {
     this.targetX = config.targetX || this.x;
     this.targetY = config.targetY || this.y;
     this.target = config.target || null; // Tracking target
+    this.sourceTowerId = config.sourceTowerId ?? null;
 
     // Direction and distance
     this.direction = { x: 0, y: 0 };
@@ -229,6 +230,7 @@ class Projectile {
     this.trail = [];
     this.age = 0;
     this.distanceTraveled = 0;
+    this.sourceTowerId = null;
   }
 
   /**
@@ -250,6 +252,7 @@ class Projectile {
     this.targetX = config.targetX || this.x;
     this.targetY = config.targetY || this.y;
     this.target = config.target || null;
+    this.sourceTowerId = config.sourceTowerId ?? null;
 
     this.damage = config.damage || 10;
     this.damageType = config.damageType || 'normal';

@@ -329,51 +329,125 @@ class GameEngine {
     const enemies = this.managers.enemy.getEnemies();
 
     for (const projectile of projectiles) {
-      if (projectile.hasHit) continue; // Already hit
+      if (projectile.hasHit) continue;
 
       for (const enemy of enemies) {
-        if (enemy.isDead) continue; // Dead enemies don't collide
+        if (enemy.isDead || !enemy.isActive) continue;
 
         let hit = false;
-
-        // 1. Homing Target Check (Prevents tunneling)
         if (projectile.target && projectile.target.id === enemy.id) {
           const dx = (enemy.x + enemy.width / 2) - (projectile.x + projectile.width / 2);
           const dy = (enemy.y + enemy.height / 2) - (projectile.y + projectile.height / 2);
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          // If close enough to target center, force hit
-          if (distance < enemy.width / 2) {
-            hit = true;
-          }
+          if (Math.hypot(dx, dy) < enemy.width / 2) hit = true;
+        }
+        if (!hit && this.checkCollision(projectile, enemy)) hit = true;
+        if (!hit) continue;
+
+        // ---- primary hit
+        const sourceTower = projectile.sourceTowerId != null
+          ? this.managers.tower.getTowerById(projectile.sourceTowerId) : null;
+        const actual = enemy.takeDamage(projectile.damage, projectile.damageType || 'normal');
+        if (sourceTower) sourceTower.recordDamage(actual);
+        projectile.hit();
+
+        this.applyOnHitEffects(sourceTower, enemy);                       // slow / burn / poison / rewind
+        this.applySplash(sourceTower, enemy, actual, projectile.damageType); // cannon
+        if (sourceTower?.config.chainEffect) {
+          this.applyChain(sourceTower, enemy, actual, projectile.damageType); // tesla
         }
 
-        // 2. Fallback to standard AABB collision
-        if (!hit && this.checkCollision(projectile, enemy)) {
-          hit = true;
+        if (enemy.isDead) {
+          this.registerKill(enemy, sourceTower);
+          this.applyContagion(sourceTower, enemy);                        // alchemist T3
         }
-
-        // Apply damage if hit
-        if (hit) {
-          const damage = projectile.damage;
-          const damageType = projectile.damageType;
-          const actual = enemy.takeDamage(damage, damageType);
-
-          const sourceTower = projectile.sourceTowerId != null
-            ? this.managers.tower.getTowerById(projectile.sourceTowerId) : null;
-          if (sourceTower) sourceTower.recordDamage(actual);
-          projectile.hit();
-
-          if (enemy.isDead) {
-            if (sourceTower) sourceTower.recordKill(enemy.bounty);
-            this.gameState.addMoney(enemy.bounty);
-            this.gameState.incrementEnemiesKilled(1);
-            this.gameState.addScore(enemy.bounty);
-          }
-          break;
-        }
+        break;
       }
     }
+  }
+
+  /** Tier-gated on-hit status effects. Tier III keeps Tier II's effects (cumulative). */
+  applyOnHitEffects(sourceTower, enemy) {
+    if (!sourceTower || !enemy || enemy.isDead) return;
+    const ab = sourceTower.config.tierAbilities;
+    if (!ab) return;
+    const tier = sourceTower.getTier();
+
+    for (const t of [2, 3]) {
+      if (tier < t) continue;
+      const onHit = ab[t]?.onHit;
+      if (!onHit) continue;
+      if (onHit.slow)    enemy.applySlow(onHit.slow.factor, onHit.slow.duration);
+      if (onHit.burn)    enemy.applyBurn(onHit.burn.dps, onHit.burn.duration);
+      if (onHit.poison)  enemy.applyBurn(onHit.poison.dps, onHit.poison.duration); // poison rides the burn slot (own visual in Phase 4)
+      if (onHit.pushBack) enemy.pushBack(onHit.pushBack);
+    }
+  }
+
+  /** Cannon tier splash: falloff damage around the primary target. */
+  applySplash(sourceTower, primary, primaryDamage, damageType) {
+    if (!sourceTower) return;
+    const tier = sourceTower.getTier();
+    const ab = sourceTower.config.tierAbilities;
+    const splash = (tier >= 3 && ab?.[3]?.onHit?.splash)
+                || (tier >= 2 && ab?.[2]?.onHit?.splash) || null;
+    if (!splash) return;
+
+    const nearby = this.managers.enemy.getEnemiesInArea(primary.x, primary.y, splash.radius)
+      .filter(e => e !== primary && !e.isDead && e.isActive);
+    for (const e of nearby) {
+      const actual = e.takeDamage(Math.round(primaryDamage * (splash.falloff ?? 0.6)), damageType);
+      sourceTower.recordDamage(actual);
+      if (e.isDead) this.registerKill(e, sourceTower);
+    }
+  }
+
+  /** Tesla chain: jumps to nearest unstruck enemy, decaying damage. Tier extends 3→4→5. */
+  applyChain(sourceTower, primary, primaryDamage, damageType) {
+    const ce = sourceTower.config.chainEffect;
+    const tier = sourceTower.getTier();
+    const jumps = ce.maxChains + (tier - 1);
+    let lastDamage = primaryDamage;
+    let origin = primary;
+    const struck = new Set([primary.id]);
+
+    for (let j = 0; j < jumps; j++) {
+      const candidates = this.managers.enemy.getEnemiesInArea(origin.x, origin.y, ce.chainRange)
+        .filter(e => !e.isDead && e.isActive && !struck.has(e.id));
+      if (candidates.length === 0) break;
+
+      candidates.sort((a, b) =>
+        Math.hypot(a.x - origin.x, a.y - origin.y) - Math.hypot(b.x - origin.x, b.y - origin.y));
+      const next = candidates[0];
+
+      lastDamage *= ce.damageMultiplier;
+      const actual = next.takeDamage(Math.round(lastDamage), damageType);
+      sourceTower.recordDamage(actual);
+
+      if (tier >= 3 && j === jumps - 1) next.applyStun(0.4);   // Storm Crown
+      if (next.isDead) this.registerKill(next, sourceTower);
+
+      struck.add(next.id);
+      origin = next;
+    }
+  }
+
+  /** Single kill-reward path for primary / splash / chain kills. */
+  registerKill(enemy, sourceTower) {
+    if (sourceTower) sourceTower.recordKill(enemy.bounty);
+    this.gameState.addMoney(enemy.bounty);
+    this.gameState.incrementEnemiesKilled(1);
+    this.gameState.addScore(enemy.bounty);
+  }
+
+  /** Alchemist T3: a poisoned enemy dying spreads poison nearby. */
+  applyContagion(sourceTower, deadEnemy) {
+    if (!sourceTower || sourceTower.getTier() < 3) return;
+    const c = sourceTower.config.tierAbilities?.[3]?.onDeath?.contagion;
+    if (!c || !deadEnemy.statusEffects.burn.active) return;   // only poisoned victims spread
+
+    const nearby = this.managers.enemy.getEnemiesInArea(deadEnemy.x, deadEnemy.y, c.radius)
+      .filter(e => !e.isDead && e.isActive);
+    for (const e of nearby) e.applyBurn(c.dps, c.duration);
   }
 
   /**

@@ -152,13 +152,13 @@ export function handleTowerSell(tower, gameEngine) {
 
   // Calculate sell price (50% of upgrade cost spent)
   const sellPrice = Math.floor(
-    tower.config.cost * 0.5 + (tower.level - 1) * tower.config.upgradeCost * 0.25
+    tower.config.cost * 0.5 + tower.upgradeCount  * 15
   );
 
   gameState.addMoney(sellPrice);
   towerManager.removeTower(tower);
 
-  console.log(`Tower sold for ${sellPrice} gold`);
+  console.log(`Tower sold for ${sellPrice} gold (T${tower.getUpgradeInfo().tierLabel})`);
 }
 
 /**
@@ -242,7 +242,7 @@ export function getTowerInfo(tower) {
     baseDamage: tower.config.damage,
     range: Math.floor(tower.range),
     baseRange: tower.config.range,
-    shotsPerSec: (1 / tower.config.fireRate).toFixed(1),   // fixed old "0.5/s" mislabel
+    shotsPerSec: (1 / tower.shotInterval).toFixed(1),   // fixed old "0.5/s" mislabel
     upgrade: tower.getUpgradeInfo(),
     combat: {
       kills: tower.enemiesKilled,
