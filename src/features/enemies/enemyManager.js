@@ -13,6 +13,7 @@ class EnemyManager {
         this.enemyPool = []; //object pool for enemies
         this.maxPoolSize = 100;
         this.nextEnemyId = 0; //for generating unique enemy ids
+        this.roundContext = null;
 
         //configuration
         this.path = []; //enemy path waypoints
@@ -24,6 +25,14 @@ class EnemyManager {
      */
     async initialize() {
         console.log( 'EnemyManager initialized')
+    }
+
+    /**
+     * Set the round context
+     * @param {Object} ctx - Round context
+     */
+    setRoundContext(ctx) { 
+        this.roundContext = ctx; 
     }
 
     /**
@@ -52,6 +61,16 @@ class EnemyManager {
         try {
             //Get enemy configuration
             const config = getEnemyConfig(enemyType, waveNumber);
+            if (this.roundContext) {
+                const rc = this.roundContext;
+                config.health = Math.ceil(config.health * rc.healthMult);
+                config.maxHealth = config.health;
+                config.speed = config.speed * rc.speedMult;
+                config.bounty = Math.ceil(config.bounty * rc.bountyMult);
+                if (config.shields) {
+                config.shields = { ...config.shields, amount: Math.round(config.shields.amount * rc.healthMult) };
+                }
+            }
             if(!config) {
                 console.warn(`Unknown enemy type: ${enemyType}`)
                 return null;
@@ -69,6 +88,7 @@ class EnemyManager {
                     path: this.path,
                     x: this.spawnPoint.x,
                     y: this.spawnPoint.y,
+                    baseSpeed: enemy.speed, //reset base speed for rage calculations
                 });
 
                 enemy.reset();
@@ -83,7 +103,9 @@ class EnemyManager {
                 });
             }
             enemy.isActive = true;
-
+            if (enemy.rages) { enemy.rageStacks = 0; enemy.speed = enemy.baseSpeed; }
+            if (enemy.shields) { enemy.shields.current = enemy.shields.amount; enemy.shields.lastHitTime = 0; }
+            
             this.enemies.push(enemy);
             return enemy;
 

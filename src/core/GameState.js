@@ -22,6 +22,8 @@ class GameState {
         this.score = 0;
 
         //Game Progress
+        this.currentRound = 1;
+        this.newRecord = false;
         this.currentWave = 0;
         this.totalWaves = 0;
         this.waveStarted = false;
@@ -71,6 +73,8 @@ class GameState {
         this.score = 0;
 
         //Game Progress
+        this.currentRound = 1;
+        this.newRecord = false;
         this.currentWave = 0;
         this.totalWaves = 0;
         this.waveStarted = false;
@@ -141,9 +145,10 @@ class GameState {
     * @returns {boolean } is the game over
     */
    setGameOver (value) {
-    if(this.getGameOver() !== value) {
+    if (this.getGameOver() !== value) {
         this.isGameOver = value;
-        this.isGameRunning = false; //stop game
+        this.isGameRunning = false;
+        if (value) this.updateHighScore();      //persist on death — was victory-only
         this.notifyListeners('gameOverChanged', value)
     }
    }
@@ -283,7 +288,7 @@ class GameState {
      */
     increaseLives(amount) {
         if (amount < 0) {
-        console.warn('⚠️ Cannot increase negative lives');
+        console.warn('Cannot increase negative lives');
         return;
         }
         this.lives += amount;
@@ -336,6 +341,19 @@ class GameState {
     // ========================
     // WAVE MANAGEMENT METHODS
     // ========================
+
+    /**
+     * Set the current round
+     * @param {number} round - Round number
+     */
+    setCurrentRound(round) {
+        if (this.currentRound !== round) {
+            this.currentRound = round;
+            this.notifyListeners('roundChanged', round);
+        }
+    }
+    getCurrentRound() { return this.currentRound; }
+    isNewRecord() { return this.newRecord; }
 
     /**
      * set current wave
@@ -601,7 +619,8 @@ class GameState {
      * Update high score if current score is higher
      */
     updateHighScore(){
-        if(this.score > this.stats.highScore) {
+        this.newRecord = this.score > this.stats.highScore;
+        if(this.newRecord) {
             this.stats.highScore = this.score;
             this.saveHighSCore(this.score)
         }

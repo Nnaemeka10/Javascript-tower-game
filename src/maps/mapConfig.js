@@ -7,31 +7,41 @@
 export const MAP_CONFIGS = [
   {
     id: 'map1',
-    name: 'Classic Path',
-    cols: 20,
-    rows: 15,
-    tileSize: 40,
-    spawn: { x: 0, y: 7 },
-    end: { x: 19, y: 7 },
+    name: 'The Serpent',
+    cols: 20, rows: 15, tileSize: 40,
+    spawn: { x: 0, y: 2 }, end: { x: 19, y: 12 },
     path: [
-      { x: 0, y: 7 }, { x: 5, y: 7 }, { x: 5, y: 3 }, { x: 10, y: 3 },
-      { x: 10, y: 11 }, { x: 15, y: 11 }, { x: 15, y: 7 }, { x: 19, y: 7 }
+      { x: 0, y: 2 }, { x: 17, y: 2 }, { x: 17, y: 7 }, { x: 2, y: 7 },
+      { x: 2, y: 12 }, { x: 19, y: 12 }
     ],
-    blocked: [
-      // Example: Blocked tiles for obstacles
-      { x: 8, y: 5 }, { x: 8, y: 6 }, { x: 8, y: 7 }, { x: 8, y: 8 },
-      { x: 12, y: 9 }, { x: 12, y: 10 }
+    blocked: [ { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 10, y: 4 }, { x: 14, y: 9 }, { x: 15, y: 9 }, { x: 6, y: 10 } ],
+    background: '#222244', gridColor: '#444466', pathColor: '#00FF00', blockedColor: '#FF3333',
+  },
+
+  {
+    id: 'map2',
+    name: 'The Serpent',
+    cols: 20, rows: 15, tileSize: 40,
+    spawn: { x: 0, y: 2 }, end: { x: 19, y: 12 },
+    path: [
+      { x: 0, y: 2 }, { x: 17, y: 2 }, { x: 17, y: 7 }, { x: 2, y: 7 },
+      { x: 2, y: 12 }, { x: 19, y: 12 }
     ],
-    towerSpots: [
-      // Example: Valid tower placement spots
-      { x: 3, y: 5 }, { x: 6, y: 2 }, { x: 9, y: 12 }, { x: 14, y: 8 },
-      { x: 17, y: 10 }
+    blocked: [ { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 10, y: 4 }, { x: 14, y: 9 }, { x: 15, y: 9 }, { x: 6, y: 10 } ],
+    background: '#222244', gridColor: '#444466', pathColor: '#00FF00', blockedColor: '#FF3333',
+  },
+
+  {
+    id: 'map3',
+    name: 'The Crossroads',
+    cols: 20, rows: 15, tileSize: 40,
+    spawn: { x: 0, y: 7 }, end: { x: 19, y: 5 },
+    path: [
+      { x: 0, y: 7 }, { x: 5, y: 7 }, { x: 5, y: 2 }, { x: 14, y: 2 },
+      { x: 14, y: 12 }, { x: 8, y: 12 }, { x: 8, y: 5 }, { x: 19, y: 5 }
     ],
-    background: '#222244',
-    gridColor: '#444466',
-    pathColor: '#00FF00',
-    blockedColor: '#FF3333',
-    towerSpotColor: '#FFD700'
+    blocked: [ { x: 10, y: 4 }, { x: 11, y: 9 }, { x: 3, y: 10 }, { x: 17, y: 8 }, { x: 6, y: 13 }, { x: 12, y: 6 } ],
+    background: '#222244', gridColor: '#444466', pathColor: '#00FF00', blockedColor: '#FF3333',
   },
   // Add more maps here as needed
 ];

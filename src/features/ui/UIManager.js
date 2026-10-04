@@ -41,6 +41,7 @@ class UIManager {
 
     // State
     this.isInitialized = false;
+    this.roundBanner = null;
   }
 
   /**
@@ -62,6 +63,13 @@ class UIManager {
 
     // Update notifications (age and remove expired)
     this.updateNotifications(deltaTime);
+
+     // Update round banner
+    if (this.roundBanner) {
+      this.roundBanner.age += deltaTime;
+      this.roundBanner.timeLeft = Math.max(0, this.roundBanner.timeLeft - deltaTime);
+      if (this.roundBanner.age >= this.roundBanner.duration) this.roundBanner = null;
+    }
   }
 
   /**
@@ -114,6 +122,21 @@ class UIManager {
   getNotifications() {
     return this.notifications;
   }
+
+  /**
+   * Show round banner
+   * @param {Object} params - Banner parameters
+   */
+  showRoundBanner({ round, mapName, goldGained, livesGained, livesCap, seconds, duration }) {
+    this.roundBanner = { round, mapName, goldGained, livesGained, livesCap,
+                          timeLeft: seconds, age: 0, duration };
+  }
+
+  /**
+   * Get round banner
+   * @returns {Object|null} Round banner or null
+   */
+  getRoundBanner() { return this.roundBanner; }
 
   /**
    * Set selected tower

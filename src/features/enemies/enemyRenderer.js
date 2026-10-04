@@ -182,6 +182,23 @@ class EnemyRenderer {
         strokeColor: '#ff8800',
         strokeWidth: 2,
       });
+    } else if (type === 'Troll') {
+      this.surface.drawRect(x, y, width, height, color, { stroke: true, strokeColor: '#22401c', strokeWidth: 3 }); // thick walls
+    } else if (type === 'Orc') {
+      this.surface.drawPolygon([
+        { x: x + width / 2, y: y },                       // pointed head — reads "berserker"
+        { x: x + width, y: y + height * 0.6 },
+        { x: x + width * 0.7, y: y + height },
+        { x: x + width * 0.3, y: y + height },
+        { x: x, y: y + height * 0.6 },
+      ], color);
+    } else if (type === 'EnemyMage') {
+      this.surface.drawPolygon([
+        { x: x + width / 2, y: y },                       // robe silhouette
+        { x: x + width, y: y + height },
+        { x: x, y: y + height },
+      ], color);
+      this.surface.drawCircle(x + width / 2, y + height * 0.3, width / 6, '#fff', { opacity: 0.8 }); // glowing eye
     } else {
       // Default rendering
       this.surface.drawRect(x, y, width, height, color);
@@ -231,6 +248,13 @@ class EnemyRenderer {
     const barHeight = this.config.healthBarHeight;
     const barX = x;
     const barY = y - this.config.healthBarOffset - barHeight;
+
+    if (enemy.shields && enemy.shields.current > 0) {
+      const shieldFrac = enemy.getShieldFraction();
+      this.surface.drawRect(barX, barY - 5, barWidth, 2, 'rgba(140, 220, 255, 0.35)');
+      this.surface.drawRect(barX, barY - 5, barWidth * shieldFrac, 2, '#8cdcff');
+    }
+    
 
     // Background (dark)
     this.surface.drawRect(
@@ -327,6 +351,12 @@ class EnemyRenderer {
         this.config.statusEffectSize / 2,
         this.colors.statusEffects.freeze
       );
+      effectCount++;
+    }
+
+    if (statusEffects.poison?.active) {
+      this.surface.drawCircle(startX + effectCount * effectSpacing, startY,
+        this.config.statusEffectSize / 2, '#a3ff5c');   // venom green - distinct from freeze's ice blue
       effectCount++;
     }
   }
@@ -426,6 +456,9 @@ class EnemyRenderer {
       Elve: '#32CD32',
       Dragon: '#DC143C',
       Hobbit: '#DAA520',
+      Troll: '#4a6741',        // moss-golem green
+      Orc: '#b5651d',          // rust orange — visually telegraphs "rage"
+      EnemyMage: '#7b68ee',    // violet — the "riddle" enemy
     };
 
     return colors[type] || this.colors.defaultEnemy;

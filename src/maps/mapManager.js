@@ -83,6 +83,25 @@ class MapManager {
     return this.maps;
   }
 
+  /** 
+   * Round→map selection. 
+   * @param {number} round
+   * @returns {void}
+  */
+  loadMapForRound(round) {
+    const idx = (round - 1) % this.maps.length;
+    this.selectMap(this.maps[idx].id);
+  }
+
+  /**
+   * Get the name of the map for a given round
+   * @param {number} round
+   * @returns {string}
+   */
+  getMapNameForRound(round) {
+    return this.maps[(round - 1) % this.maps.length]?.name ?? 'Unknown';
+  }
+
   /**
    * Is a tile blocked (obstacle)?
    * @param {number} x
@@ -93,16 +112,7 @@ class MapManager {
     return this.currentMap.blocked.some(tile => tile.x === x && tile.y === y);
   }
 
-  /**
-   * Is a tile a valid tower spot?
-   * @param {number} x
-   * @param {number} y
-   * @returns {boolean}
-   */
-  isTowerSpot(x, y) {
-    return this.currentMap.towerSpots.some(spot => spot.x === x && spot.y === y);
-  }
-
+  
   /**
    * Get path waypoints for enemy movement
    * @returns {Array}
@@ -147,26 +157,6 @@ class MapManager {
     return x >= 0 && x < cols && y >= 0 && y < rows;
   }
 
-  /**
-   * Find nearest tower spot to a given position
-   * @param {number} x
-   * @param {number} y
-   * @returns {Object|null}
-   */
-  findNearestTowerSpot(x, y) {
-    let minDist = Infinity;
-    let nearest = null;
-    this.currentMap.towerSpots.forEach(spot => {
-      const dx = spot.x - x;
-      const dy = spot.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < minDist) {
-        minDist = dist;
-        nearest = spot;
-      }
-    });
-    return nearest;
-  }
 
   /**
    * Get a snapshot of current map state (for debugging)

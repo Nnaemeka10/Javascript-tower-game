@@ -22,6 +22,7 @@ import WaveManager from '../features/waves/WaveManager.js';
 import MoneyManager from '../features/economy/MoneyManager.js';
 import UIManager from '../features/ui/UIManager.js';
 import MapManager from '../maps/mapManager.js';
+import RoundManager from '../features/rounds/RoundManager.js';
 
 // Import all renderers
 import TowerRenderer from '../features/towers/towerRenderer.js';
@@ -64,6 +65,13 @@ class GameEngine {
       map: new MapManager(),
     };
 
+    this.roundManager = new RoundManager({
+      gameState: this.gameState, waveManager: this.managers.wave,
+      enemyManager: this.managers.enemy, mapManager: this.managers.map,
+      towerManager: this.managers.tower, uiManager: this.managers.ui,
+      gameEngine: this,
+    });
+
     // Initialize all renderers (each receives renderSurface)
     this.renderers = {
       grid: new GridRenderer(this.renderSurface),
@@ -99,20 +107,10 @@ class GameEngine {
       await this.managers.projectile.initialize();
       await this.managers.wave.initialize();
       await this.managers.ui.initialize();
+      await this.roundManager.initialize();
 
-      // Set enemy path from current map (convert grid to world coordinates)
-      const currentMap = this.managers.map.getCurrentMap();
-      const tileSize = currentMap.tileSize;
-      const worldPath = currentMap.path.map(point => ({
-        x: point.x * tileSize + tileSize / 2,
-        y: point.y * tileSize + tileSize / 2,
-      }));
-      const worldSpawn = {
-        x: currentMap.spawn.x * tileSize + tileSize / 2,
-        y: currentMap.spawn.y * tileSize + tileSize / 2,
-      };
-      this.managers.enemy.setPath(worldPath);
-      this.managers.enemy.setSpawnPoint(worldSpawn);
+      // Apply the current map to enemy pathing
+      this.applyCurrentMap();
 
       // Initialize all renderers
       await this.renderers.grid.initialize();
@@ -190,6 +188,7 @@ class GameEngine {
     this.gameState.setTotalWaves(this.managers.wave.getTotalWaves());
     this.gameState.setGameRunning(true);
     this.gameLoop.start();
+    this.roundManager.start();
     
     // Start the first wave
     this.managers.wave.startWave(this.managers.enemy, this.gameState);
@@ -231,6 +230,7 @@ class GameEngine {
       this.gameState.setFPS(this.gameLoop.getFPS());
 
       // Update systems in dependency order
+      this.roundManager.update(deltaTime);
       // 1. Wave manager (spawns enemies)
       this.managers.wave.update(deltaTime, this.managers.enemy, this.gameState);
 
@@ -260,6 +260,16 @@ class GameEngine {
       this.gameState.setGameError(true);
       // Continue running despite error
     }
+  }
+
+  /**
+   * Derive enemy path/spawn from the CURRENT map. Called on init AND every round change.
+   */
+  applyCurrentMap() {
+    const m = this.managers.map.getCurrentMap();
+    const t = m.tileSize;
+    this.managers.enemy.setPath(m.path.map(p => ({ x: p.x * t + t / 2, y: p.y * t + t / 2 })));
+    this.managers.enemy.setSpawnPoint({ x: m.spawn.x * t + t / 2, y: m.spawn.y * t + t / 2 });
   }
 
   /**
@@ -377,8 +387,8 @@ class GameEngine {
       const onHit = ab[t]?.onHit;
       if (!onHit) continue;
       if (onHit.slow)    enemy.applySlow(onHit.slow.factor, onHit.slow.duration);
-      if (onHit.burn)    enemy.applyBurn(onHit.burn.dps, onHit.burn.duration);
-      if (onHit.poison)  enemy.applyBurn(onHit.poison.dps, onHit.poison.duration); // poison rides the burn slot (own visual in Phase 4)
+      if (onHit.poison) enemy.applyPoison(onHit.poison.dps, onHit.poison.duration, sourceTower.id);
+      if (onHit.burn)   enemy.applyBurn(onHit.burn.dps, onHit.burn.duration, sourceTower.id);
       if (onHit.pushBack) enemy.pushBack(onHit.pushBack);
     }
   }
@@ -432,8 +442,10 @@ class GameEngine {
   }
 
   /** Single kill-reward path for primary / splash / chain kills. */
-  registerKill(enemy, sourceTower) {
-    if (sourceTower) sourceTower.recordKill(enemy.bounty);
+    registerKill(enemy, sourceTower) {
+    const killer = sourceTower
+      ?? (enemy.deathSourceTag != null ? this.managers.tower.getTowerById(enemy.deathSourceTag) : null);
+    if (killer) killer.recordKill(enemy.bounty);
     this.gameState.addMoney(enemy.bounty);
     this.gameState.incrementEnemiesKilled(1);
     this.gameState.addScore(enemy.bounty);
@@ -520,12 +532,8 @@ class GameEngine {
     }
 
     // Check win condition
-    if (
-      waves.isAllWavesComplete() &&
-      enemies.length === 0 &&
-      !this.gameState.getGameWon()
-    ) {
-      this.endGame(true, 'All waves completed!');
+    if (waves.isAllWavesComplete() && enemies.length === 0 && !this.roundManager.isTransitioning()) {
+      this.roundManager.beginRoundTransition();
       return;
     }
   }
@@ -557,6 +565,7 @@ class GameEngine {
     console.log('Resetting game...');
 
     this.gameState.reset();
+    this.roundManager.reset();
     this.managers.tower.clear();
     this.managers.enemy.clear();
     this.managers.projectile.clear();
@@ -618,6 +627,7 @@ class GameEngine {
     return {
       initialized: this.isInitialized,
       gameState: this.gameState.getSnapshot(),
+      round: this.roundManager.getCurrentRound(),
       gameLoop: this.gameLoop.getPerformanceReport(),
       renderSurface: this.renderSurface.getSnapshot(),
       managers: {

@@ -29,6 +29,7 @@ const ENEMY_TYPES = {
       normal: 0,
       fire: 0.1, //10% fire resistance
       ice: 0,
+      lightning: 0.15, poison: 0.2, magic: 0.1
     },
     image: 'goblin.png', //path to sprite
     description: 'Fast and weak, low bounty',
@@ -46,6 +47,7 @@ const ENEMY_TYPES = {
       normal: 0,
       fire: 0.2,
       ice: 0.1,
+      lightning: 0.1, poison: 0.1,  magic: 0.15
     },
     image: 'dwarve.png',
     description: 'Tanky with armor. Medium speed.',
@@ -63,6 +65,7 @@ const ENEMY_TYPES = {
       normal: 0,
       fire: 0,
       ice: 0.3, // Very resistant to ice
+      lightning: 0.2, poison: 0.15, magic: 0.25
     },
     image: 'elve.png',
     description: 'Swift and agile. High ice resistance.',
@@ -80,6 +83,7 @@ const ENEMY_TYPES = {
       normal: 0,
       fire: 0,
       ice: 0,
+      lightning: 0.1, poison: 0.1,  magic: 0.1
     },
     image: 'hobbit.png',
     description: 'Tiny and quick. Lowest bounty.',
@@ -97,10 +101,40 @@ const ENEMY_TYPES = {
       normal: 0,
       fire: 0.8, // Very resistant to fire
       ice: 0.3,
+      lightning: 0.4, poison: 0.3,  magic: 0.5 
     },
     image: 'dragon.png',
     description: 'Boss enemy. High HP, armor, and bounty.',
     difficulty: 5,
+  },
+
+    Troll: {
+    name: 'Troll', health: 220, speed: 45, size: 26,
+    bounty: 60, armor: 8,
+    resistances: { normal: 0, fire: 0.2, ice: 0.1, lightning: 0.2, poison: 0.2 },
+    image: 'troll.png', description: 'Walking fortress. Break it with splash or chain.',
+    difficulty: 4,
+    rages: false,
+  },
+
+  Orc: {
+    name: 'Orc', health: 120, speed: 60, size: 22,
+    bounty: 35, armor: 2,
+    resistances: { normal: 0, fire: 0, ice: 0, lightning: 0, poison: 0.15 },
+    image: 'orc.png', description: 'Faster with every wound. Finish it fast.',
+    difficulty: 3,
+    rages: true,                          // +8% speed per hit taken
+    rageFactor: 0.08,
+    rageCap: 0.8,                         // max +80%
+  },
+
+  EnemyMage: {
+    name: 'Enemy Mage', health: 180, speed: 55, size: 20,
+    bounty: 80, armor: 0,
+    resistances: { normal: 0, fire: 0, ice: 0.2, lightning: 0.25, poison: 0.05, magic: 0.6 },
+    image: 'enemy_mage.png', description: 'Shields regen. Attrition, not burst.',
+    difficulty: 4,
+    shields: { amount: 80, regenPerSecond: 8, delay: 2 },
   },
 }
 
@@ -170,6 +204,11 @@ const STATUS_EFFECTS = {
     duration: 2, // seconds
     stackable: false, // Replaces other slows
   },
+  poison: {
+    damagePerSecond: 6,
+    duration: 4,
+    stackable: false,
+  },
 };
 
 /**
@@ -201,6 +240,13 @@ export function getEnemyConfig(enemyType, waveNumber = 1) {
     config.maxHealth = config.health;
     config.speed = baseConfig.speed * speedMultiplier;
     config.bounty = Math.ceil(baseConfig.bounty * bountyMultiplier);
+    if (baseConfig.shields) {
+      config.shields = {
+        amount: Math.round(baseConfig.shields.amount * healthMultiplier),
+        regenPerSecond: baseConfig.shields.regenPerSecond,
+        delay: baseConfig.shields.delay,
+      };
+    }
   } else {
     config.maxHealth = config.health;
   }

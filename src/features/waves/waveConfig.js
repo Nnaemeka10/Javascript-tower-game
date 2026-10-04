@@ -17,132 +17,61 @@ export const WAVE_CONFIG = {
   baseSpawnInterval: 0.5,
 
   // Waves array - each defines enemies to spawn
-  waves: [
-    {
-      waveNumber: 1,
-      name: 'Goblin Rush',
-      description: 'A swarm of weak goblins',
-      spawnPattern: [
-        { type: 'Goblin', count: 8, interval: 0.3 },
-      ],
-      isBoss: false,
-      baseReward: 50,
-    },
+    waves: [
+    { waveNumber: 1, name: 'Scouts', isBoss: false, baseReward: 50,
+      spawnPattern: [{ type: 'Goblin', count: 8, interval: 0.4 }] },
 
-    {
-      waveNumber: 2,
-      name: 'Mixed Forces',
-      description: 'Goblins and Dwarves',
+    { waveNumber: 2, name: 'Quick Feet', isBoss: false, baseReward: 60,
       spawnPattern: [
-        { type: 'Goblin', count: 6, interval: 0.4 },
-        { type: 'Dwarve', count: 3, interval: 0.5 },
-      ],
-      isBoss: false,
-      baseReward: 80,
-    },
+        { type: 'Goblin', count: 6, interval: 0.35 },
+        { type: 'Hobbit', count: 6, interval: 0.2 }] },
 
-    {
-      waveNumber: 3,
-      name: 'Elven Archers',
-      description: 'Fast and deadly elves',
+    { waveNumber: 3, name: 'First Riddle', isBoss: false, baseReward: 70,   // intro Mage
       spawnPattern: [
-        { type: 'Elve', count: 7, interval: 0.3 },
-        { type: 'Goblin', count: 4, interval: 0.4 },
-      ],
-      isBoss: false,
-      baseReward: 100,
-    },
+        { type: 'EnemyMage', count: 2, interval: 1.2 },
+        { type: 'Goblin', count: 6, interval: 0.3 }] },
 
-    {
-      waveNumber: 4,
-      name: 'Hobbits Invasion',
-      description: 'Fastest enemies yet',
+    { waveNumber: 4, name: 'Rage Warning', isBoss: false, baseReward: 80,   // intro Orc
       spawnPattern: [
-        { type: 'Hobbit', count: 10, interval: 0.2 },
-        { type: 'Elve', count: 4, interval: 0.5 },
-      ],
-      isBoss: false,
-      baseReward: 120,
-    },
+        { type: 'Orc', count: 4, interval: 0.7 },
+        { type: 'Goblin', count: 6, interval: 0.3 }] },
 
-    {
-      waveNumber: 5,
-      name: 'Dragon Awakens!',
-      description: 'A powerful boss dragon',
+    { waveNumber: 5, name: 'The Wall', isBoss: true, baseReward: 250,       // intro Troll (boss-wave pacing)
       spawnPattern: [
-        { type: 'Hobbit', count: 5, interval: 0.3 },
-        { type: 'Dragon', count: 1, interval: 2.0 },
-        { type: 'Dwarve', count: 3, interval: 0.5 },
-      ],
-      isBoss: true,
-      baseReward: 250,
-    },
+        { type: 'Troll', count: 2, interval: 2.5 },
+        { type: 'Orc', count: 3, interval: 0.6 },
+        { type: 'Goblin', count: 8, interval: 0.25 }] },
 
-    {
-      waveNumber: 6,
-      name: 'Veteran Mix',
-      description: 'Stronger versions of previous enemies',
+    { waveNumber: 6, name: 'Mixed Doubles', isBoss: false, baseReward: 150,
       spawnPattern: [
         { type: 'Dwarve', count: 8, interval: 0.4 },
         { type: 'Elve', count: 6, interval: 0.3 },
-        { type: 'Goblin', count: 4, interval: 0.5 },
-      ],
-      isBoss: false,
-      baseReward: 150,
-    },
+        { type: 'Orc', count: 4, interval: 0.5 }] },
 
-    {
-      waveNumber: 7,
-      name: 'Speedster Wave',
-      description: 'All fast enemies',
+    { waveNumber: 7, name: 'Casters\' Council', isBoss: false, baseReward: 170,
       spawnPattern: [
-        { type: 'Hobbit', count: 15, interval: 0.2 },
-        { type: 'Elve', count: 8, interval: 0.3 },
-      ],
-      isBoss: false,
-      baseReward: 180,
-    },
+        { type: 'EnemyMage', count: 4, interval: 1.0 },
+        { type: 'Elve', count: 8, interval: 0.3 }] },
 
-    {
-      waveNumber: 8,
-      name: 'Tanker Formation',
-      description: 'Heavy hitters',
+    { waveNumber: 8, name: 'Fortress', isBoss: false, baseReward: 200,
       spawnPattern: [
-        { type: 'Dragon', count: 1, interval: 1.5 },
-        { type: 'Dwarve', count: 12, interval: 0.3 },
-        { type: 'Goblin', count: 8, interval: 0.4 },
-      ],
-      isBoss: false,
-      baseReward: 200,
-    },
+        { type: 'Troll', count: 3, interval: 2.0 },
+        { type: 'Dwarve', count: 10, interval: 0.35 }] },
 
-    {
-      waveNumber: 9,
-      name: 'Chaos Storm',
-      description: 'Everything at once',
+    { waveNumber: 9, name: 'Everything, Angry', isBoss: false, baseReward: 220,
       spawnPattern: [
-        { type: 'Hobbit', count: 12, interval: 0.2 },
-        { type: 'Elve', count: 10, interval: 0.3 },
-        { type: 'Dwarve', count: 6, interval: 0.4 },
-        { type: 'Goblin', count: 8, interval: 0.5 },
-      ],
-      isBoss: false,
-      baseReward: 220,
-    },
+        { type: 'Orc', count: 8, interval: 0.4 },
+        { type: 'EnemyMage', count: 3, interval: 1.2 },
+        { type: 'Elve', count: 10, interval: 0.25 },
+        { type: 'Goblin', count: 10, interval: 0.2 }] },
 
-    {
-      waveNumber: 10,
-      name: 'Final Boss: Two Dragons',
-      description: 'The ultimate challenge',
+    { waveNumber: 10, name: 'Dragons\' Court', isBoss: true, baseReward: 500,
       spawnPattern: [
         { type: 'Dragon', count: 2, interval: 3.0 },
-        { type: 'Dwarve', count: 15, interval: 0.3 },
-        { type: 'Elve', count: 12, interval: 0.3 },
-        { type: 'Hobbit', count: 20, interval: 0.2 },
-      ],
-      isBoss: true,
-      baseReward: 500,
-    },
+        { type: 'Troll', count: 2, interval: 2.5 },
+        { type: 'EnemyMage', count: 4, interval: 1.0 },
+        { type: 'Orc', count: 6, interval: 0.4 },
+        { type: 'Hobbit', count: 20, interval: 0.15 }] },
   ],
 };
 
@@ -234,7 +163,7 @@ export function getWaveDescription(waveNumber) {
   let description = config.description;
 
   if (config.isBoss) {
-    description += ' ⚠️';
+    description += ' (Boss Wave!)';
   }
 
   return description;

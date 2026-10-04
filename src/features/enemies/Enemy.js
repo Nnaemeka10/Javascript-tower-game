@@ -37,6 +37,7 @@ class Enemy {
 
     //movement
     this.speed = config.speed || 50; //pixels per second
+    this.baseSpeed = this.speed; //store base speed for rage calculations
     this.direction = {x:0, y:0}; //unit direction
     this.rotation = 0; //rotation angle in radians
 
@@ -49,6 +50,13 @@ class Enemy {
     //stats
     this.bounty = config.bounty || 10; //money reward
     this.armor = config.armor || 0; //damage reduction
+    this.shields = config.shields
+      ? { ...config.shields, current: config.shields.amount, lastHitTime: 0 }
+      : null;
+    this.rages = config.rages ?? false;
+    this.rageFactor = config.rageFactor ?? 0;
+    this.rageCap = config.rageCap ?? 0;
+    this.rageStacks = 0;
     this.resistances = config.resistances || {}; //type based resistances (fire, ice, etc.)
 
     //status effects
@@ -57,6 +65,7 @@ class Enemy {
         stun: {active: false, duration: 0 },
         burn: {active: false, duration: 0, damagePerSecond: 0},
         freeze: {active: false, duration: 0},
+        poison: { active: false, duration: 0, damagePerSecond: 0, sourceTag: null },
     };
 
     //special abilities
@@ -212,15 +221,34 @@ class Enemy {
     }
 
     //update burn effect
-    if(this.statusEffects.burn.active) {
-        this.statusEffects.burn.duration -= deltaTime;
-        if(this.statusEffects.burn.duration <= 0) {
-            this.statusEffects.burn.active = false;
-        } else {
-            //apply burn damage
-            const damageThisFrame = this.statusEffects.burn.damagePerSecond * deltaTime;
-            this.takeDamage(damageThisFrame);
-        }
+    // burn (fire)
+    if (this.statusEffects.burn.active) {
+      this.statusEffects.burn.duration -= deltaTime;
+      if (this.statusEffects.burn.duration <= 0) this.statusEffects.burn.active = false;
+      else {
+        const dmg = this.statusEffects.burn.damagePerSecond * deltaTime;
+        this.takeDamage(dmg, 'fire', this.statusEffects.burn.sourceTag ?? null);
+      }
+    }
+
+    // poison (Phase 4 — separate visual; own regen immunity below)
+    if (this.statusEffects.poison.active) {
+      this.statusEffects.poison.duration -= deltaTime;
+      if (this.statusEffects.poison.duration <= 0) this.statusEffects.poison.active = false;
+      else {
+        const dmg = this.statusEffects.poison.damagePerSecond * deltaTime;
+        this.takeDamage(dmg, 'poison', this.statusEffects.poison.sourceTag ?? null);
+      }
+    }
+
+    // shield regen (Enemy Mage): paused while recently hit
+    if (this.shields && !this.isDead) {
+      this.shields.lastHitTime += deltaTime;
+      if (this.shields.current < this.shields.amount
+          && this.shields.lastHitTime >= this.shields.delay) {
+        this.shields.current = Math.min(this.shields.amount,
+          this.shields.current + this.shields.regenPerSecond * deltaTime);
+      }
     }
 
     //update freeze effect
@@ -238,26 +266,41 @@ class Enemy {
    * @param {string} damageType - Type of damage (normal, fire, ice, etc.)
    * @returns {number} Actual damage taken
    */
-  takeDamage(damage, damageType = 'normal'){
-    if(this.isDead) return 0;
+    takeDamage(damage, damageType = 'normal', sourceTag = null) {
+    if (this.isDead) return 0;
 
-    //apply armor reduction
+    // Rage: every hit taken adds speed — even 1-dmg pings count
+    if (this.rages && damage > 0) {
+      this.rageStacks = Math.min(this.rageStacks + 1,
+        Math.ceil(this.rageCap / this.rageFactor));
+      this.speed = this.baseSpeedForRage();
+    }
+
     let actualDamage = Math.max(1, damage - this.armor);
-    
-    //apply type based resistances
-    if (this.resistances[damageType]) {
-        actualDamage *= (1 - this.resistances[damageType]);
+    if (this.resistances?.[damageType]) {
+      actualDamage *= (1 - this.resistances[damageType]);
+    }
+
+    // Shields absorb first, then regen after a delay
+    if (this.shields && this.shields.current > 0) {
+      const absorbed = Math.min(this.shields.current, actualDamage);
+      this.shields.current -= absorbed;
+      actualDamage -= absorbed;
+      this.shields.lastHitTime = 0;
     }
 
     this.health -= actualDamage;
-
-    //check if dead
-    if(this.health <= 0) {
-        this.health = 0;
-        this.isDead = true;
+    if (this.health <= 0) {
+      this.health = 0;
+      this.isDead = true;
+      this.deathSourceTag = sourceTag;        // DoT kill attribution
     }
 
     return actualDamage;
+  }
+
+  baseSpeedForRage() {
+    return this.baseSpeed * (1 + Math.min(this.rageStacks * this.rageFactor, this.rageCap));
   }
 
   /**
@@ -323,11 +366,13 @@ class Enemy {
    * Apply burn effect
    * @param {number} damagePerSecond - Damage per second
    * @param {number} duration - Damage duration in seconds
+   * @param {string} sourceTag - Source tag for attribution
    */
-  applyBurn(damagePerSecond, duration){
+  applyBurn(damagePerSecond, duration, sourceTag = null) {
     this.statusEffects.burn.active = true;
     this.statusEffects.burn.damagePerSecond = damagePerSecond;
     this.statusEffects.burn.duration = Math.max(this.statusEffects.burn.duration, duration)
+    this.statusEffects.burn.sourceTag = sourceTag;
   }
 
   /**
@@ -338,6 +383,28 @@ class Enemy {
     this.statusEffects.freeze.active = true;
     this.statusEffects.freeze.duration = Math.max(this.statusEffects.freeze.duration, duration)
     this.applySlow(0, duration); //freeze = complete slow
+  }
+
+    /**
+   * Apply poison effect
+   * @param {number} dps - Damage per second
+   * @param {number} duration - Duration in seconds
+   * @param {string} sourceTag - Source tag for attribution
+   */
+  applyPoison(dps, duration, sourceTag = null) {
+    const p = this.statusEffects.poison;
+    p.active = true;
+    p.damagePerSecond = Math.max(p.damagePerSecond, dps);
+    p.duration = Math.max(p.duration, duration);
+    p.sourceTag = sourceTag;
+  }
+
+  /**
+   * Get shield fraction
+   * @returns {number} Shield fraction (0-1)
+   */
+  getShieldFraction() {
+    return this.shields ? this.shields.current / this.shields.amount : 0;
   }
 
   /**
@@ -438,6 +505,10 @@ class Enemy {
     this.opacity = 1;
     this.rotation = 0;
     this.isActive = false;
+    this.rageStacks = 0;
+    if (this.shields) this.shields.current = this.shields.amount;
+    this.deathSourceTag = null;
+    this.statusEffects.poison = { active: false, duration: 0, damagePerSecond: 0, sourceTag: null };
 
     // Clear status effects
     Object.keys(this.statusEffects).forEach(key => {

@@ -77,6 +77,11 @@ class UIRenderer {
       this.renderNotifications(uiManager.getNotifications());
     }
 
+    // Draw round banner
+    if (uiManager && uiManager.getRoundBanner()) {
+      this.renderRoundBanner(uiManager.getRoundBanner());
+    }
+
     // Draw tower info panel if tower selected
     if (uiManager && uiManager.getSelectedTower()) {
       this.renderTowerPanel(uiManager.getSelectedTowerInfo());
@@ -87,10 +92,10 @@ class UIRenderer {
       this.renderGameOver(gameState);
     }
 
-    // Draw game won overlay
-    if (gameState.getGameWon()) {
-      this.renderGameWon(gameState);
-    }
+    // // Draw game won overlay
+    // if (gameState.getGameWon()) {
+    //   this.renderGameWon(gameState);
+    // }
   }
 
   /**
@@ -138,7 +143,7 @@ class UIRenderer {
     );
 
     // Wave display (center)
-    const waveText = `Wave ${gameState.getCurrentWave()}/${gameState.getTotalWaves()}`;
+    const waveText = `R${gameState.getCurrentRound()} · Wave ${gameState.getCurrentWave()}/${gameState.getTotalWaves()}`;
     this.renderSurface.drawText(
       waveText,
       W / 2,
@@ -187,6 +192,38 @@ class UIRenderer {
       { stroke: true, strokeColor: '#555555', strokeWidth: 1 });
     if (progress > 0) {
       this.renderSurface.drawRect(barX, barY, barW * progress, barH, '#ffcc00');
+    }
+  }
+
+    /**
+   * Render round banner
+   * @param {Object} banner - Banner data
+   * @private
+   */
+  renderRoundBanner(banner) {
+    const { width: W } = this.getWorldSize();
+    const bw = 380, bh = 150;
+    const bx = W / 2 - bw / 2, by = 300 - bh / 2;
+
+    this.renderSurface.drawRect(bx, by, bw, bh, 'rgba(13,13,26,0.92)',
+      { stroke: true, strokeColor: '#6ee7ff', strokeWidth: 2 });
+
+    this.renderSurface.drawText(`ROUND ${banner.round}`, W / 2, by + 30,
+      { font: 'bold 30px Arial', color: '#ffcc4d', align: 'center', baseline: 'middle' });
+    this.renderSurface.drawText(banner.mapName, W / 2, by + 62,
+      { font: '16px Arial', color: '#6ee7ff', align: 'center', baseline: 'middle' });
+
+    const perks = [];
+    if (banner.goldGained > 0) perks.push(`+${banner.goldGained}g round bonus`);
+    if (banner.livesGained > 0) perks.push(`+${banner.livesGained} lives (cap ${banner.livesCap})`);
+    if (perks.length) {
+      this.renderSurface.drawText(perks.join('   ·   '), W / 2, by + 90,
+        { font: '12px Arial', color: '#ececf4', align: 'center', baseline: 'middle' });
+    }
+
+    if (banner.timeLeft > 0) {
+      this.renderSurface.drawText(`Next wave in ${Math.ceil(banner.timeLeft)}s`, W / 2, by + bh - 16,
+        { font: '12px Arial', color: '#9c9cb4', align: 'center', baseline: 'middle' });
     }
   }
 
@@ -437,6 +474,18 @@ class UIRenderer {
       }
     );
 
+    this.renderSurface.drawText(`Survived to Round ${gameState.getCurrentRound()}`,
+      dims.width / 2, dims.height / 2 - 20,
+      { font: 'bold 20px Arial', color: this.colors.hudText, align: 'center', baseline: 'middle' });
+
+    const hsLine = gameState.isNewRecord()
+      ? `NEW HIGH SCORE: ${gameState.getHighScore()}`
+      : `High Score: ${gameState.getHighScore()}`;
+    this.renderSurface.drawText(hsLine, dims.width / 2, dims.height / 2 + 50,
+      { font: 'bold 18px Arial',
+        color: gameState.isNewRecord() ? this.colors.successText : this.colors.infoText,
+        align: 'center', baseline: 'middle' });
+
     // Final score
     this.renderSurface.drawText(
       `Final Score: ${gameState.getScore()}`,
@@ -464,84 +513,84 @@ class UIRenderer {
     );
   }
 
-  /**
-   * Render game won overlay
-   * @private
-   */
-  renderGameWon(gameState) {
-    const dims = this.getWorldSize();
+  // /**
+  //  * Render game won overlay
+  //  * @private
+  //  */
+  // renderGameWon(gameState) {
+  //   const dims = this.getWorldSize();
 
-    // Semi-transparent overlay
-    this.renderSurface.save();
-    this.renderSurface.setAlpha(0.8);
+  //   // Semi-transparent overlay
+  //   this.renderSurface.save();
+  //   this.renderSurface.setAlpha(0.8);
 
-    this.renderSurface.drawRect(
-      0,
-      0,
-      dims.width,
-      dims.height,
-      '#000000',
-      0,
-      true
-    );
+  //   this.renderSurface.drawRect(
+  //     0,
+  //     0,
+  //     dims.width,
+  //     dims.height,
+  //     '#000000',
+  //     0,
+  //     true
+  //   );
 
-    this.renderSurface.restore();
+  //   this.renderSurface.restore();
 
-    // Victory text
-    this.renderSurface.drawText(
-      'VICTORY!',
-      dims.width / 2,
-      dims.height / 2 - 60,
-      {
-        font: 'bold 60px Arial',
-        color: this.colors.successText,
-        align: 'center',
-        baseline: 'middle',
-      }
-    );
+  //   // Victory text
+  //   this.renderSurface.drawText(
+  //     'VICTORY!',
+  //     dims.width / 2,
+  //     dims.height / 2 - 60,
+  //     {
+  //       font: 'bold 60px Arial',
+  //       color: this.colors.successText,
+  //       align: 'center',
+  //       baseline: 'middle',
+  //     }
+  //   );
 
-    // Final score
-    this.renderSurface.drawText(
-      `Final Score: ${gameState.getScore()}`,
-      dims.width / 2,
-      dims.height / 2 + 20,
-      {
-        font: 'bold 24px Arial',
-        color: this.colors.hudText,
-        align: 'center',
-        baseline: 'middle',
-      }
-    );
+  //   // Final score
+  //   this.renderSurface.drawText(
+  //     `Final Score: ${gameState.getScore()}`,
+  //     dims.width / 2,
+  //     dims.height / 2 + 20,
+  //     {
+  //       font: 'bold 24px Arial',
+  //       color: this.colors.hudText,
+  //       align: 'center',
+  //       baseline: 'middle',
+  //     }
+  //   );
 
-    // High score
-    const highScore = gameState.getHighScore();
-    if (gameState.getScore() > highScore) {
-      this.renderSurface.drawText(
-        `New High Score!`,
-        dims.width / 2,
-        dims.height / 2 + 60,
-        {
-          font: 'bold 20px Arial',
-          color: this.colors.successText,
-          align: 'center',
-          baseline: 'middle',
-        }
-      );
-    }
+  //   // High score
+  //   const highScore = gameState.getHighScore();
+  //   if (gameState.getScore() > highScore) {
+  //     this.renderSurface.drawText(
+  //       `New High Score!`,
+  //       dims.width / 2,
+  //       dims.height / 2 + 60,
+  //       {
+  //         font: 'bold 20px Arial',
+  //         color: this.colors.successText,
+  //         align: 'center',
+  //         baseline: 'middle',
+  //       }
+  //     );
+  //   }
 
-    // Restart hint
-    this.renderSurface.drawText(
-      'Press SPACE or click START to play again',
-      dims.width / 2,
-      dims.height / 2 + 100,
-      {
-        font: '16px Arial',
-        color: this.colors.infoText,
-        align: 'center',
-        baseline: 'middle',
-      }
-    );
-  }
+  //   // Restart hint
+  //   this.renderSurface.drawText(
+  //     'Press SPACE or click START to play again',
+  //     dims.width / 2,
+  //     dims.height / 2 + 100,
+  //     {
+  //       font: '16px Arial',
+  //       color: this.colors.infoText,
+  //       align: 'center',
+  //       baseline: 'middle',
+  //     }
+  //   );
+  // }
 
   /**
    * Get renderer snapshot for debugging

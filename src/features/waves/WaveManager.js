@@ -30,6 +30,7 @@ class WaveManager {
     this.enemiesSpawnedThisWave = 0;
     this.waveStartedCount = 0;
     this.waveCompletedCount = 0;
+    this.rewardMultiplier = 1; // For scaling rewards per wave
 
     // State
     this.isInitialized = false;
@@ -154,7 +155,7 @@ class WaveManager {
     this.isWaveActive = false;
     this.waveCompletedCount++;
 
-    const reward = getWaveReward(this.currentWave);
+    const reward = Math.floor(getWaveReward(this.currentWave) * this.rewardMultiplier);
 
     gameState.addMoney(reward);
     gameState.completeWave();
@@ -184,6 +185,14 @@ class WaveManager {
     if (this.currentWave < this.totalWaves) {
       this.startWave(enemyManager, gameState);
     }
+  }
+
+  /**
+   * Set reward multiplier for waves
+   * @param {number} m - Multiplier
+   */
+  setRewardMultiplier(m) { 
+    this.rewardMultiplier = m;
   }
 
   /**
@@ -264,6 +273,7 @@ class WaveManager {
     this.currentSpawnCount = 0;
     this.allEnemiesSpawned = false;
     this.enemiesSpawnedThisWave = 0;
+    this.rewardMultiplier = 1;
 
     console.log('Wave manager reset');
   }
