@@ -67,6 +67,11 @@ class PathRenderer {
         '#FF3333', { opacity: 0.8 }
       );
     }
+    if (mapConfig.landmark === 'keep' && end) {
+      this.renderSurface.drawRect(
+        end.x * tileSize + 7, end.y * tileSize + 7, tileSize - 14, tileSize - 14,
+        '#ffcc4d', { stroke: true, strokeColor: '#ff5c5c', strokeWidth: 2 });
+    }
   }
 }
 

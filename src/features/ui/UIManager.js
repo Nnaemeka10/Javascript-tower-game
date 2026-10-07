@@ -30,6 +30,9 @@ class UIManager {
     this.isDraggingTower = false;
     this.draggedTower = null;
 
+    // Visual effects
+    this.visualFx = [];
+
     // Notifications
     this.notifications = [];
     this.maxNotifications = 5;
@@ -69,6 +72,11 @@ class UIManager {
       this.roundBanner.age += deltaTime;
       this.roundBanner.timeLeft = Math.max(0, this.roundBanner.timeLeft - deltaTime);
       if (this.roundBanner.age >= this.roundBanner.duration) this.roundBanner = null;
+    }
+    // Update visual effects
+    for (let i = this.visualFx.length - 1; i >= 0; i--) {
+      this.visualFx[i].age += deltaTime;
+      if (this.visualFx[i].age >= this.visualFx[i].duration) this.visualFx.splice(i, 1);
     }
   }
 
@@ -284,6 +292,21 @@ class UIManager {
   getSelectedTowerInfo() {
     return getTowerInfo(this.selectedTower);
   }
+
+  /**
+   * Spawn visual effect
+   * Transient combat feedback. kind: 'flash' | 'burst'.
+   * @param {string} kind - Effect kind
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {string} color - Effect color
+   */
+  spawnFx(kind, x, y, color) {
+    if (this.visualFx.length > 40) return;         // hard cap — fx never lag the game
+    this.visualFx.push({ kind, x, y, color, age: 0, duration: kind === 'burst' ? 0.6 : 0.35 });
+  }
+
+  getVisualFx() { return this.visualFx; }
 
   /**
    * Get manager snapshot for debugging

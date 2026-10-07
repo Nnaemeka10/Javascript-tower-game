@@ -5,12 +5,16 @@
  */
 
 import { MAP_CONFIGS, getMapConfig } from './mapConfig.js';
+import { MapGenerator } from './mapGenerator.js';
 
 class MapManager {
   constructor() {
     this.maps = MAP_CONFIGS;
     this.currentMapId = this.maps[0]?.id || null;
     this.currentMap = getMapConfig(this.currentMapId);
+    this.generator = new MapGenerator();
+    this.generator.setBaseSeed(Date.now() >>> 0);   // session seed: new boards every session,
+                                                    // identical boards within a session (fair resets)
   }
 
   /**
@@ -88,9 +92,10 @@ class MapManager {
    * @param {number} round
    * @returns {void}
   */
-  loadMapForRound(round) {
-    const idx = (round - 1) % this.maps.length;
-    this.selectMap(this.maps[idx].id);
+   loadMapForRound(round) {
+    if (round === 1) { this.selectMap('map1'); return; }
+    this.currentMap = this.generator.generate(round);
+    this.currentMapId = this.currentMap.id;
   }
 
   /**
@@ -99,7 +104,8 @@ class MapManager {
    * @returns {string}
    */
   getMapNameForRound(round) {
-    return this.maps[(round - 1) % this.maps.length]?.name ?? 'Unknown';
+    if (round === 1) return this.maps[0].name;
+    return this.generator.generate(round).name;     // cache hit — same map advanceRound will load
   }
 
   /**
@@ -165,7 +171,8 @@ class MapManager {
   getSnapshot() {
     return {
       id: this.currentMapId,
-      config: this.currentMap
+      config: this.currentMap,
+      generated: this.currentMapId.startsWith('gen_'),
     };
   }
 }

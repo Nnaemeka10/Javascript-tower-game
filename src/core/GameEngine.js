@@ -19,7 +19,6 @@ import TowerManager from '../features/towers/towerManager.js';
 import EnemyManager from '../features/enemies/enemyManager.js';
 import ProjectileManager from '../features/projectiles/projectileManager.js';
 import WaveManager from '../features/waves/WaveManager.js';
-import MoneyManager from '../features/economy/MoneyManager.js';
 import UIManager from '../features/ui/UIManager.js';
 import MapManager from '../maps/mapManager.js';
 import RoundManager from '../features/rounds/RoundManager.js';
@@ -60,7 +59,6 @@ class GameEngine {
       enemy: new EnemyManager(),
       projectile: new ProjectileManager(),
       wave: new WaveManager(),
-      money: new MoneyManager(),
       ui: new UIManager(),
       map: new MapManager(),
     };
@@ -101,7 +99,6 @@ class GameEngine {
 
       // Initialize all managers (order matters - dependencies first)
       await this.managers.map.initialize();
-      await this.managers.money.initialize();
       await this.managers.tower.initialize(this.renderSurface, this.managers.map);
       await this.managers.enemy.initialize();
       await this.managers.projectile.initialize();
@@ -160,10 +157,6 @@ class GameEngine {
           if (data) {
             console.log(' You won!');
           }
-          break;
-
-        case 'moneyChanged':
-          this.managers.money.recordMoneyChanged(data);   
           break;
 
         case 'livesChanged':
@@ -389,7 +382,11 @@ class GameEngine {
       if (onHit.slow)    enemy.applySlow(onHit.slow.factor, onHit.slow.duration);
       if (onHit.poison) enemy.applyPoison(onHit.poison.dps, onHit.poison.duration, sourceTower.id);
       if (onHit.burn)   enemy.applyBurn(onHit.burn.dps, onHit.burn.duration, sourceTower.id);
-      if (onHit.pushBack) enemy.pushBack(onHit.pushBack);
+      if (onHit.pushBack) {
+        enemy.pushBack(onHit.pushBack);
+        this.managers.ui.spawnFx('flash',
+          enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, '#6ee7ff');
+      }
     }
   }
 
@@ -460,6 +457,8 @@ class GameEngine {
     const nearby = this.managers.enemy.getEnemiesInArea(deadEnemy.x, deadEnemy.y, c.radius)
       .filter(e => !e.isDead && e.isActive);
     for (const e of nearby) e.applyBurn(c.dps, c.duration);
+    this.managers.ui.spawnFx('burst',
+    deadEnemy.x + deadEnemy.width / 2, deadEnemy.y + deadEnemy.height / 2, '#a3ff5c');
   }
 
   /**
@@ -532,7 +531,7 @@ class GameEngine {
     }
 
     // Check win condition
-    if (waves.isAllWavesComplete() && enemies.length === 0 && !this.roundManager.isTransitioning()) {
+    if (waves.isAllWavesComplete() && enemies.length === 0 && !this.roundManager.isInIntermission()) {
       this.roundManager.beginRoundTransition();
       return;
     }
@@ -542,15 +541,9 @@ class GameEngine {
    * End the game (win or lose)
    * @private
    */
-  endGame(won, reason) {
-    if (won) {
-      this.gameState.setGameWon(true);
-      console.log(`Victory ${reason}`);
-    } else {
-      this.gameState.setGameOver(true);
-      console.log(`Defeat: ${reason}`);
-    }
-
+   endGame(reason) {
+    this.gameState.setGameOver(true);
+    console.log(`${reason}`);
     this.stop();
   }
 
@@ -570,7 +563,6 @@ class GameEngine {
     this.managers.enemy.clear();
     this.managers.projectile.clear();
     this.managers.wave.reset();
-    this.managers.money.reset();
   }
 
   // ============================================

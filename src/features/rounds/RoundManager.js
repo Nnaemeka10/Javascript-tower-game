@@ -21,7 +21,7 @@ class RoundManager {
     console.log(`➡ ROUND 1 — ${this.refs.mapManager.getCurrentMap().name}`);
   }
 
-  isTransitioning() { return this.isTransitioning; }
+  isInIntermission() { return this.isTransitioning; }
 
   beginRoundTransition() {
     if (this.isTransitioning) return;

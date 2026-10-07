@@ -130,6 +130,11 @@ class EnemyRenderer {
         this.renderStatusEffects(enemy);
       }
 
+            // Render stun ring (if stunned)
+      if (enemy.statusEffects.stun.active) {
+        this.renderStunRing(enemy);
+      }
+
       // Render selection highlight (if selected)
       if (enemy.isSelected) {
         this.renderSelectionHighlight(enemy);
@@ -301,9 +306,26 @@ class EnemyRenderer {
     }
   }
 
+    /**
+   * Render stun ring around stunned enemy
+   * @private
+   * @param {Enemy} enemy - The stunned enemy
+   */
+  renderStunRing(enemy) {
+    const cx = enemy.x + enemy.width / 2, cy = enemy.y + enemy.height / 2;
+    const r = enemy.width / 2 + 4;
+    this.surface.drawCircle(cx, cy, r, 'transparent',
+      { stroke: true, strokeColor: '#FFD700', strokeWidth: 1.5 });
+    for (let k = 0; k < 3; k++) {
+      const a = (k / 3) * Math.PI * 2;
+      this.surface.drawCircle(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2, '#FFD700');
+    }
+  }
+
   /**
    * Render status effect indicators below enemy
    * @private
+   * @param {Enemy} enemy - The enemy with status effects
    */
   renderStatusEffects(enemy) {
     const { x, y, height, statusEffects } = enemy;
@@ -364,6 +386,7 @@ class EnemyRenderer {
   /**
    * Render selection highlight around selected enemy
    * @private
+   * @param {Enemy} enemy - The selected enemy
    */
   renderSelectionHighlight(enemy) {
     const { x, y, width, height } = enemy;
@@ -406,6 +429,7 @@ class EnemyRenderer {
   /**
    * Render debug information for an enemy
    * @private
+   * @param {Enemy} enemy - The enemy to render debug info for
    */
   renderDebugInfo(enemy) {
     const { x, y, width, height, id, type, speed, health, maxHealth } = enemy;
@@ -448,6 +472,8 @@ class EnemyRenderer {
   /**
    * Get color for enemy type
    * @private
+   * @param {string} type - Enemy type
+   * @returns {string} Color hex code
    */
   getEnemyColor(type) {
     const colors = {

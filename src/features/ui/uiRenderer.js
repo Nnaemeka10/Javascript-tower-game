@@ -77,6 +77,10 @@ class UIRenderer {
       this.renderNotifications(uiManager.getNotifications());
     }
 
+    if (uiManager && uiManager.getVisualFx().length) {
+      this.renderVisualFx(uiManager.getVisualFx());
+    }
+
     // Draw round banner
     if (uiManager && uiManager.getRoundBanner()) {
       this.renderRoundBanner(uiManager.getRoundBanner());
@@ -96,6 +100,33 @@ class UIRenderer {
     // if (gameState.getGameWon()) {
     //   this.renderGameWon(gameState);
     // }
+  }
+
+  /**
+   * Render visual effects (e.g., flashes, bursts)
+   * @param {Array} fxList - List of visual effects
+   * @private
+   */
+  renderVisualFx(fxList) {
+    for (const fx of fxList) {
+      const p = fx.age / fx.duration;             // 0 → 1
+      this.renderSurface.save();
+      this.renderSurface.setAlpha(1 - p);
+
+      if (fx.kind === 'flash') {                  // Freeze T3 rewind: expanding cyan ring
+        this.renderSurface.drawCircle(fx.x, fx.y, 8 + 26 * p, 'transparent',
+          { stroke: true, strokeColor: fx.color, strokeWidth: 2 });
+      } else {                                    // contagion burst: ring + 6 flying spores
+        this.renderSurface.drawCircle(fx.x, fx.y, 6 + 34 * p, 'transparent',
+          { stroke: true, strokeColor: fx.color, strokeWidth: 1.5 });
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2;
+          const d = 8 + 30 * p;
+          this.renderSurface.drawCircle(fx.x + Math.cos(a) * d, fx.y + Math.sin(a) * d, 2.5, fx.color);
+        }
+      }
+      this.renderSurface.restore();
+    }
   }
 
   /**

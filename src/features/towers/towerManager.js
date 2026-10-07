@@ -53,12 +53,6 @@ class TowerManager {
 
     this.mapManager = mapManager;
 
-    // Pre-pool some tower instances for performance
-    // Note: These are placeholder towers - they'll be reconfigured when used
-    for (let i = 0; i < 20; i++) {
-      this.pool.push(new Tower(0, 'ballista', 0, 0, 0, 0));
-    }
-
     this.isInitialized = true;
     console.log('TowerManager initialized');
   }

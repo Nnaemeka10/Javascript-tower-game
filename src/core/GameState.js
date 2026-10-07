@@ -161,26 +161,26 @@ class GameState {
 
 
 
-   /**
-    * set game won state
-    * @param {boolean} value - is gme won
-    * get game over state
-    * @returns {boolean} is the game won
-    */
-   setGameWon (value) {
-    if (this.getGameWon() !== value) {
-        this.isGameWon = value;
-        this.isGameRunning = false; //stop when game won
-        this.notifyListeners('gameWonChanged', value);
+//    /**
+//     * set game won state
+//     * @param {boolean} value - is gme won
+//     * get game over state
+//     * @returns {boolean} is the game won
+//     */
+//    setGameWon (value) {
+//     if (this.getGameWon() !== value) {
+//         this.isGameWon = value;
+//         this.isGameRunning = false; //stop when game won
+//         this.notifyListeners('gameWonChanged', value);
 
-        if(value) {
-            this.updateHighScore();
-        }
-    }
-   }
-   getGameWon() {
-    return this.isGameWon;
-   } 
+//         if(value) {
+//             this.updateHighScore();
+//         }
+//     }
+//    }
+//    getGameWon() {
+//     return this.isGameWon;
+//    } 
 
 
 
@@ -329,14 +329,7 @@ class GameState {
         return this.score;
     }
 
-    /**
-     * Increment towers placed counter
-     * @param {number} count - Number to add
-     */
-    incrementTowersPlaced(count) {
-        this.stats.totalTowersPlaced += count;
-        this.notifyListeners('towersPlacedChanged', this.stats.totalTowersPlaced);
-    }
+ 
 
     // ========================
     // WAVE MANAGEMENT METHODS
